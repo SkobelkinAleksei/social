@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
+import java.util.Optional;
 
 import static java.util.Objects.isNull;
 
@@ -62,10 +63,18 @@ public class UserService {
         }
 
         if (!isNull(updateAccountUser.getEmail())) {
+            Optional<UserEntity> byUserEmail  = userRepository.findByEmailIgnoreCase(updateAccountUser.getEmail());
+            if (byUserEmail.isPresent() && !byUserEmail.get().getId().equals(userId)) {
+                throw new IllegalArgumentException("Данный email уже занят");
+            }
             userEntity.setEmail(updateAccountUser.getEmail());
         }
 
         if (!isNull(updateAccountUser.getNumberPhone())) {
+            Optional<UserEntity> byNumberPhone = userRepository.findByNumberPhone(updateAccountUser.getNumberPhone());
+            if (byNumberPhone.isPresent() && !byNumberPhone.get().getId().equals(userId)) {
+                throw new IllegalArgumentException("Данный номер телефона уже занят");
+            }
             userEntity.setNumberPhone(updateAccountUser.getNumberPhone());
         }
 
