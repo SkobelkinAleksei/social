@@ -31,6 +31,8 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/actuator/**").permitAll()
+
                         .requestMatchers(
                                 "/social/v1/public/auth/login",
                                 "/social/v1/public/auth/registration",

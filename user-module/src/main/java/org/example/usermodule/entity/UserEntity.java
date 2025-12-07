@@ -32,7 +32,7 @@ public class UserEntity {
     @Column(name = "number_phone", unique = true, nullable = false)
     private String numberPhone;
 
-    @Column(name = "password", nullable = false, length = 20)
+    @Column(name = "password", nullable = false, length = 100)
     private String password;
 
     @Column(columnDefinition = "TIMESTAMP", name = "birthday", nullable = false)
