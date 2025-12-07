@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.example.usermodule.dto.JwtUserData;
 import org.example.usermodule.entity.UserEntity;
 import org.example.usermodule.repository.UserRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,7 +22,6 @@ import java.util.List;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -33,21 +33,19 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
+
             try {
-                String email = jwtUtil.validateAccessToken(token);
+                JwtUserData data = jwtUtil.validateAccessToken(token);
 
-                UserEntity user = userRepository.findByEmailIgnoreCase(email)
-                        .orElse(null);
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(
+                                data.id(),
+                                null,
+                                List.of(new SimpleGrantedAuthority("ROLE_" + data.role()))
+                        );
 
-                if (user != null) {
-                    UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(
-                                    email, null,
-                                    List.of(new SimpleGrantedAuthority(user.getRole().name()))
-                            );
+                SecurityContextHolder.getContext().setAuthentication(auth);
 
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                }
             } catch (Exception ignored) {}
         }
 

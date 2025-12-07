@@ -1,0 +1,41 @@
+package org.example.usermodule.dto;
+
+import jakarta.validation.constraints.*;
+import lombok.*;
+
+import java.io.Serializable;
+import java.time.LocalDate;
+
+@Setter
+@Getter
+@EqualsAndHashCode
+@NoArgsConstructor
+@AllArgsConstructor
+public class UpdateAccountUserDto implements Serializable {
+
+    @Size(min = 2, max = 20, message = "Имя должно быть от 2 до 20 символов.")
+    String username;
+
+    @Size(min = 2, max = 20, message = "Фамилия должна быть от 2 до 20 символов.")
+    String lastName;
+
+    @Email
+    @Size(max = 100, message = "Email не может быть длиннее 100 символов.")
+    String email;
+
+    @Pattern(regexp = "\\+7[0-9]{10}", message = "Телефонный номер должен начинаться с +7, затем - 10 цифр.")
+    String numberPhone;
+
+    @NotBlank(message = "Введите пароль для успешного обновления данных")
+    String oldPassword;
+
+    @Pattern(
+            regexp = "^(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,20}$",
+            message = "Пароль должен содержать хотя бы одну заглавную букву," +
+                    " хотя бы одну цифру, только английские символы и иметь длину от 8 до 20 символов."
+    )
+    String newPassword;
+
+    @Past(message = "Дата рождения не может превышать текущую дату.")
+    LocalDate birthday;
+}

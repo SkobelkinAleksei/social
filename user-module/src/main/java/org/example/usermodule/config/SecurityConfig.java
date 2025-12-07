@@ -38,7 +38,7 @@ public class SecurityConfig {
                                 "/", "/error"
                         ).permitAll()
 
-                        .requestMatchers("/admin/**").hasRole(Role.ADMIN.name())
+                        .requestMatchers("/social/v1/admin/**").hasRole(Role.ADMIN.name())
                         .requestMatchers(
                                 "/social/v1/users/**"
                         ).hasAnyRole(Role.USER.name(), Role.ADMIN.name())
