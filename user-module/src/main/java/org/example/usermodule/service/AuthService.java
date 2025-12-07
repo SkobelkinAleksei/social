@@ -1,5 +1,6 @@
 package org.example.usermodule.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.usermodule.dto.LoginUserDto;
 import org.example.usermodule.dto.authDto.RegistrationUserDto;
@@ -59,10 +60,10 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public JwtResponse refresh(String refreshToken) {
-        String email = jwtUtil.validateRefreshToken(refreshToken);
+        Long userId = jwtUtil.validateRefreshToken(refreshToken);
 
-        UserEntity user = userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
 
         return new JwtResponse(
                 jwtUtil.generateAccessToken(user),

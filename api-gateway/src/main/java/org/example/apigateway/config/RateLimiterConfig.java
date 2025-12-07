@@ -20,7 +20,7 @@ public class RateLimiterConfig {
     private String accessSecret;
 
     @Bean
-    public KeyResolver userKeyResolver() {
+    KeyResolver userKeyResolver() {
         return exchange ->
                 Mono.just(resolveKey(exchange));
     }

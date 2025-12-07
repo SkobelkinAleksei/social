@@ -39,7 +39,7 @@ spring:
                 key-resolver: "#{@userKeyResolver}"
 security:
   jwt:
-    access-secret: ${JWT_ACCESS:ACCESS_SECRET_KEY_1234567890}
+    access-secret: ${SECURITY_JWT}
 
 eureka:
   client:
