@@ -3,6 +3,7 @@ package org.example.usermodule.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.usermodule.dto.UpdateAccountUserDto;
+import org.example.usermodule.dto.UpdatePasswordUserDto;
 import org.example.usermodule.dto.UserDto;
 import org.example.usermodule.dto.UserFullDto;
 import org.example.usermodule.service.UserService;
@@ -39,5 +40,15 @@ public class UserController {
             @Valid @RequestBody UpdateAccountUserDto updateAccountUser
     ) throws AccessDeniedException {
         return ResponseEntity.ok().body(userService.updateUserAccount(userId, updateAccountUser));
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @PutMapping("/account/{userId}/update/pass")
+    public ResponseEntity<Void> updatePasswordUser(
+            @PathVariable Long userId,
+            @Valid @RequestBody UpdatePasswordUserDto updatePasswordUserDto
+    ) throws AccessDeniedException {
+        userService.updatePassword(userId, updatePasswordUserDto);
+        return ResponseEntity.noContent().build();
     }
 }

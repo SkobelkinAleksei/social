@@ -1,8 +1,10 @@
 package org.example.usermodule.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.usermodule.dto.UpdateAccountUserDto;
+import org.example.usermodule.dto.UpdatePasswordUserDto;
 import org.example.usermodule.dto.UserDto;
 import org.example.usermodule.dto.UserFullDto;
 import org.example.usermodule.entity.UserEntity;
@@ -39,7 +41,7 @@ public class UserService {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @CacheEvict(value = {"userByEmail", "userProfile"}, allEntries = true)
+    @CacheEvict(value = {"userByEmail"}, allEntries = true)
     @Transactional
     public UserDto updateUserAccount(Long userId, UpdateAccountUserDto updateAccountUser) throws AccessDeniedException {
         Long authId = (Long) SecurityContextHolder.getContext()
@@ -54,9 +56,7 @@ public class UserService {
                 () -> new EntityNotFoundException("Пользователь не был найден.")
         );
 
-        if (!passwordEncoder.matches(updateAccountUser.getOldPassword(), userEntity.getPassword())) {
-            throw new IllegalArgumentException("Неверный старый пароль");
-        }
+
 
         if (!isNull(updateAccountUser.getUsername())) {
             userEntity.setUsername(updateAccountUser.getUsername());
@@ -74,11 +74,6 @@ public class UserService {
             userEntity.setNumberPhone(updateAccountUser.getNumberPhone());
         }
 
-        if (!isNull(updateAccountUser.getNewPassword())) {
-            String newPass = passwordEncoder.encode(updateAccountUser.getNewPassword());
-            userEntity.setPassword(newPass);
-        }
-
         if (!isNull(updateAccountUser.getBirthday())) {
             userEntity.setBirthday(updateAccountUser.getBirthday());
         }
@@ -88,13 +83,12 @@ public class UserService {
         );
     }
 
-    @Cacheable(value = "userProfile", key = "#userId")
     @PreAuthorize("hasRole('USER')")
     @Transactional(readOnly = true)
     public UserFullDto getMyProfile(Long userId) throws AccessDeniedException {
         Long authId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (authId.equals(userId)) {
+        if (!authId.equals(userId)) {
             throw new AccessDeniedException("Нет доступа к профилю!");
         }
 
@@ -103,5 +97,30 @@ public class UserService {
         );
 
         return userMapper.toFullDto(userEntity);
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @Transactional(readOnly = true)
+    public void updatePassword(
+            Long userId,
+            UpdatePasswordUserDto updatePasswordUserDto
+    ) throws AccessDeniedException {
+
+        Long authId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!authId.equals(userId)) {
+            throw new AccessDeniedException("Нет доступа для изменения пароля!");
+        }
+
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow(
+                () -> new EntityNotFoundException("Пользователь не был найден.")
+        );
+
+        if (!passwordEncoder.matches(updatePasswordUserDto.getOldPassword(), userEntity.getPassword())) {
+            throw new IllegalArgumentException("Неверный старый пароль");
+        }
+
+        String newPass = passwordEncoder.encode(updatePasswordUserDto.getNewPassword());
+        userEntity.setPassword(newPass);
     }
 }

@@ -26,16 +26,6 @@ public class UpdateAccountUserDto implements Serializable {
     @Pattern(regexp = "\\+7[0-9]{10}", message = "Телефонный номер должен начинаться с +7, затем - 10 цифр.")
     String numberPhone;
 
-    @NotBlank(message = "Введите пароль для успешного обновления данных")
-    String oldPassword;
-
-    @Pattern(
-            regexp = "^(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,20}$",
-            message = "Пароль должен содержать хотя бы одну заглавную букву," +
-                    " хотя бы одну цифру, только английские символы и иметь длину от 8 до 20 символов."
-    )
-    String newPassword;
-
     @Past(message = "Дата рождения не может превышать текущую дату.")
     LocalDate birthday;
 }

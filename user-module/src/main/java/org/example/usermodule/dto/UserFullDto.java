@@ -18,7 +18,6 @@ public class UserFullDto implements Serializable {
     String lastName;
     String email;
     String numberPhone;
-    String password;
     LocalDate birthday;
     LocalDateTime timeStamp;
     Role role;
