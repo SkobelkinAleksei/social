@@ -1,5 +1,6 @@
 package org.example.usermodule.mapper;
 
+import org.example.usermodule.dto.UserFullDto;
 import org.example.usermodule.dto.authDto.RegistrationUserDto;
 import org.example.usermodule.dto.UserDto;
 import org.example.usermodule.entity.UserEntity;
@@ -15,6 +16,8 @@ public interface UserMapper {
     UserEntity toEntity(RegistrationUserDto userDto);
 
     UserEntity toEntity(UserDto userDto);
+
+    UserFullDto toFullDto(UserEntity userEntity);
 
     UserDto toDto(UserEntity userEntity);
 }

@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.usermodule.dto.UpdateAccountUserDto;
 import org.example.usermodule.dto.UserDto;
+import org.example.usermodule.dto.UserFullDto;
 import org.example.usermodule.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,6 +17,12 @@ import java.nio.file.AccessDeniedException;
 @RestController
 public class UserController {
     private final UserService userService;
+
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/my-profile")
+    public ResponseEntity<UserFullDto> getMyProfile(Long userId) throws AccessDeniedException {
+        return ResponseEntity.ok().body(userService.getMyProfile(userId));
+    }
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/by-email")

@@ -4,12 +4,14 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.usermodule.dto.UpdateAccountUserDto;
 import org.example.usermodule.dto.UserDto;
+import org.example.usermodule.dto.UserFullDto;
 import org.example.usermodule.entity.UserEntity;
 import org.example.usermodule.mapper.UserMapper;
 import org.example.usermodule.repository.UserRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,7 +39,7 @@ public class UserService {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @CacheEvict(value = "userById", key = "#userId")
+    @CacheEvict(value = {"userByEmail", "userProfile"}, allEntries = true)
     @Transactional
     public UserDto updateUserAccount(Long userId, UpdateAccountUserDto updateAccountUser) throws AccessDeniedException {
         Long authId = (Long) SecurityContextHolder.getContext()
@@ -84,5 +86,22 @@ public class UserService {
         return userMapper.toDto(
                 userRepository.save(userEntity)
         );
+    }
+
+    @Cacheable(value = "userProfile", key = "#userId")
+    @PreAuthorize("hasRole('USER')")
+    @Transactional(readOnly = true)
+    public UserFullDto getMyProfile(Long userId) throws AccessDeniedException {
+        Long authId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (authId.equals(userId)) {
+            throw new AccessDeniedException("Нет доступа к профилю!");
+        }
+
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow(
+                () -> new EntityNotFoundException("Пользователь не был найден.")
+        );
+
+        return userMapper.toFullDto(userEntity);
     }
 }
