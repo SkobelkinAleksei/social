@@ -46,10 +46,17 @@ public class SecurityConfig {
                                 "/"
                         ).permitAll()
 
-                        .requestMatchers("/social/v1/admin/**").hasRole(Role.ADMIN.name())
+                        .requestMatchers(
+                                "/social/v1/admin/**"
+                        ).hasRole(
+                                Role.ADMIN.name()
+                        )
+
                         .requestMatchers(
                                 "/social/v1/users/**"
-                        ).hasAnyRole(Role.USER.name(), Role.ADMIN.name())
+                        ).hasAnyRole(
+                                Role.USER.name()
+                        )
 
                         .anyRequest().authenticated()
                 )
