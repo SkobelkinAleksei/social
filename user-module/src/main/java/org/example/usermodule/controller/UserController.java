@@ -19,7 +19,9 @@ public class UserController {
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/by-email")
-    public ResponseEntity<UserDto> getUserByEmail(@RequestParam String email) {
+    public ResponseEntity<UserDto> getUserByEmail(
+            @RequestParam String email
+    ) {
         return ResponseEntity.ok().body(userService.getUserByEmail(email));
     }
 
@@ -28,7 +30,7 @@ public class UserController {
     public ResponseEntity<UserDto> updateUserAccount(
             @PathVariable Long userId,
             @Valid @RequestBody UpdateAccountUserDto updateAccountUser
-            ) throws AccessDeniedException {
+    ) throws AccessDeniedException {
         return ResponseEntity.ok().body(userService.updateUserAccount(userId, updateAccountUser));
     }
 }

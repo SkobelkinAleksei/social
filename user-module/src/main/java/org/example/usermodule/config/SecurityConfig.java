@@ -3,6 +3,8 @@ package org.example.usermodule.config;
 import lombok.RequiredArgsConstructor;
 import org.example.usermodule.entity.enums.Role;
 import org.example.usermodule.security.JwtFilter;
+import org.example.usermodule.security.SecurityProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,6 +23,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableMethodSecurity
 @Configuration
+@EnableConfigurationProperties(SecurityProperties.class)
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;

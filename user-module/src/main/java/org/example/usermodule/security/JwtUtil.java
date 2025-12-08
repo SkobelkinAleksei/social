@@ -16,15 +16,14 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class JwtUtil {
 
-    private final String accessSecret = "ACCESS_SECRET_KEY_1234567890";
-    private final String refreshSecret = "REFRESH_SECRET_KEY_1234567890";
+    private final SecurityProperties securityProperties;
 
     public String generateAccessToken(UserEntity user) {
         return Jwts.builder()
                 .claim("id", user.getId())
                 .claim("role", user.getRole().name())
                 .setExpiration(Date.from(Instant.now().plus(15, ChronoUnit.MINUTES)))
-                .signWith(SignatureAlgorithm.HS256, accessSecret)
+                .signWith(SignatureAlgorithm.HS256, securityProperties.getAccessSecret())
                 .compact();
     }
 
@@ -32,13 +31,13 @@ public class JwtUtil {
         return Jwts.builder()
                 .claim("id", user.getId())
                 .setExpiration(Date.from(Instant.now().plus(30, ChronoUnit.DAYS)))
-                .signWith(SignatureAlgorithm.HS256, refreshSecret)
+                .signWith(SignatureAlgorithm.HS256, securityProperties.getRefreshSecret())
                 .compact();
     }
 
     public JwtUserData validateAccessToken(String token) {
         Claims claims = Jwts.parser()
-                .setSigningKey(accessSecret)
+                .setSigningKey(securityProperties.getAccessSecret())
                 .parseClaimsJws(token)
                 .getBody();
 
@@ -50,7 +49,7 @@ public class JwtUtil {
 
     public Long validateRefreshToken(String token) {
         Claims claims = Jwts.parser()
-                .setSigningKey(refreshSecret)
+                .setSigningKey(securityProperties.getRefreshSecret())
                 .parseClaimsJws(token)
                 .getBody();
 
