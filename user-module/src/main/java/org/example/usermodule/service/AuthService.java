@@ -11,6 +11,9 @@ import org.example.usermodule.mapper.UserMapper;
 import org.example.usermodule.repository.UserRepository;
 import org.example.usermodule.security.JwtResponse;
 import org.example.usermodule.security.JwtUtil;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Service
 public class AuthService {
+
+    private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
@@ -44,14 +49,18 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public JwtResponse login(LoginUserDto loginUserDto) {
+
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginUserDto.getEmail(),
+                        loginUserDto.getPassword()
+                )
+        );
+
         UserEntity userEntity = userRepository.findByEmailIgnoreCase(loginUserDto.getEmail()).orElseThrow(
                 () -> new IllegalArgumentException("Неверный email или password")
         );
-
-        if (!passwordEncoder.matches(loginUserDto.getPassword(), userEntity.getPassword())) {
-            throw new IllegalArgumentException("Неверный email или password");
-        }
-
+        
         String access = jwtUtil.generateAccessToken(userEntity);
         String refresh = jwtUtil.generateRefreshToken(userEntity);
 
