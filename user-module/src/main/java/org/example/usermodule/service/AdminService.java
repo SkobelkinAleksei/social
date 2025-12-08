@@ -9,6 +9,7 @@ import org.example.usermodule.mapper.UserMapper;
 import org.example.usermodule.repository.UserRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,8 @@ public class AdminService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional(readOnly = true)
     public List<UserDto> getAllUsers() {
         return userRepository.findAll()
                 .stream()
@@ -28,6 +31,7 @@ public class AdminService {
                 .toList();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Cacheable(value = "userById", key = "#userId")
     @Transactional(readOnly = true)
     public UserDto getUserById(Long userId) {
@@ -39,6 +43,7 @@ public class AdminService {
         return userMapper.toDto(userEntity);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @CacheEvict(value = "userById", key = "#userId")
     @Transactional
     public void deleteUserById(Long userId) {

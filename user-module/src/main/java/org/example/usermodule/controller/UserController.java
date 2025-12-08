@@ -6,6 +6,7 @@ import org.example.usermodule.dto.UpdateAccountUserDto;
 import org.example.usermodule.dto.UserDto;
 import org.example.usermodule.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
@@ -16,11 +17,13 @@ import java.nio.file.AccessDeniedException;
 public class UserController {
     private final UserService userService;
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/by-email")
     public ResponseEntity<UserDto> getUserByEmail(@RequestParam String email) {
         return ResponseEntity.ok().body(userService.getUserByEmail(email));
     }
 
+    @PreAuthorize("hasRole('USER')")
     @PutMapping("/account/{userId}/update")
     public ResponseEntity<UserDto> updateUserAccount(
             @PathVariable Long userId,

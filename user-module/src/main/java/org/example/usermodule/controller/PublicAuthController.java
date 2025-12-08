@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
-@RequestMapping("/social/v1/public/auth")
+@RequestMapping("/social/public/v1/auth")
 @RestController
 public class PublicAuthController {
     private final AuthService authService;

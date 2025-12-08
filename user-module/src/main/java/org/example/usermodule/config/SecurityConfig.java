@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -18,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @RequiredArgsConstructor
 @EnableWebSecurity
+@EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
 
@@ -36,10 +38,9 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").permitAll()
 
                         .requestMatchers(
-                                "/social/v1/public/auth/login",
-                                "/social/v1/public/auth/registration",
-                                "/social/v1/public/auth/refresh",
-                                "/", "/error"
+                                "/social/public/**",
+                                "/error",
+                                "/"
                         ).permitAll()
 
                         .requestMatchers("/social/v1/admin/**").hasRole(Role.ADMIN.name())
