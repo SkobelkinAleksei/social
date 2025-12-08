@@ -2,11 +2,9 @@ package org.example.usermodule.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.usermodule.dto.UpdateAccountUserDto;
-import org.example.usermodule.dto.UpdatePasswordUserDto;
-import org.example.usermodule.dto.UserDto;
-import org.example.usermodule.dto.UserFullDto;
+import org.example.usermodule.dto.*;
 import org.example.usermodule.service.UserService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,16 +19,28 @@ public class UserController {
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/my-profile")
-    public ResponseEntity<UserFullDto> getMyProfile(Long userId) throws AccessDeniedException {
+    public ResponseEntity<UserFullDto> getMyProfile(
+            @RequestParam Long userId
+    ) throws AccessDeniedException {
         return ResponseEntity.ok().body(userService.getMyProfile(userId));
     }
 
     @PreAuthorize("hasRole('USER')")
-    @GetMapping("/by-email")
+    @GetMapping("/search/by-email")
     public ResponseEntity<UserDto> getUserByEmail(
             @RequestParam String email
     ) {
         return ResponseEntity.ok().body(userService.getUserByEmail(email));
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @GetMapping("/search")
+    public ResponseEntity<Page<UserDto>> search(
+            UserFilterDto filter,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok().body(userService.searchUsers(filter, page, size));
     }
 
     @PreAuthorize("hasRole('USER')")

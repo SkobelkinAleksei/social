@@ -3,17 +3,17 @@ package org.example.usermodule.service;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.usermodule.dto.UpdateAccountUserDto;
-import org.example.usermodule.dto.UpdatePasswordUserDto;
-import org.example.usermodule.dto.UserDto;
-import org.example.usermodule.dto.UserFullDto;
+import org.example.usermodule.dto.*;
 import org.example.usermodule.entity.UserEntity;
 import org.example.usermodule.mapper.UserMapper;
 import org.example.usermodule.repository.UserRepository;
+import org.example.usermodule.utils.UserSpecification;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,6 @@ public class UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
-    @PreAuthorize("hasRole('USER')")
     @Cacheable(value = "userByEmail", key = "#email")
     @Transactional(readOnly = true)
     public UserDto getUserByEmail(String email) {
@@ -40,13 +39,14 @@ public class UserService {
                         .orElseThrow(() -> new EntityNotFoundException("Пользователь не был найден")));
     }
 
-    @PreAuthorize("hasRole('USER')")
     @CacheEvict(value = {"userByEmail"}, allEntries = true)
     @Transactional
     public UserDto updateUserAccount(Long userId, UpdateAccountUserDto updateAccountUser) throws AccessDeniedException {
-        Long authId = (Long) SecurityContextHolder.getContext()
+
+        JwtUserData user = (JwtUserData) SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getPrincipal();
+        Long authId = user.id();
 
         if (!authId.equals(userId)) {
             throw new AccessDeniedException("Вы не можете обновить чужой аккаунт");
@@ -83,10 +83,13 @@ public class UserService {
         );
     }
 
-    @PreAuthorize("hasRole('USER')")
     @Transactional(readOnly = true)
     public UserFullDto getMyProfile(Long userId) throws AccessDeniedException {
-        Long authId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        JwtUserData user = (JwtUserData) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
+        Long authId = user.id();
 
         if (!authId.equals(userId)) {
             throw new AccessDeniedException("Нет доступа к профилю!");
@@ -99,14 +102,16 @@ public class UserService {
         return userMapper.toFullDto(userEntity);
     }
 
-    @PreAuthorize("hasRole('USER')")
     @Transactional(readOnly = true)
     public void updatePassword(
             Long userId,
             UpdatePasswordUserDto updatePasswordUserDto
     ) throws AccessDeniedException {
 
-        Long authId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        JwtUserData user = (JwtUserData) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
+        Long authId = user.id();
 
         if (!authId.equals(userId)) {
             throw new AccessDeniedException("Нет доступа для изменения пароля!");
@@ -122,5 +127,19 @@ public class UserService {
 
         String newPass = passwordEncoder.encode(updatePasswordUserDto.getNewPassword());
         userEntity.setPassword(newPass);
+        userRepository.save(userEntity);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<UserDto> searchUsers(UserFilterDto filter, int page, int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+
+        Page<UserEntity> users = userRepository.findAll(
+                UserSpecification.filter(filter),
+                pageable
+        );
+
+        return users.map(userMapper::toDto);
     }
 }
