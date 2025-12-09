@@ -7,10 +7,9 @@ plugins {
 group = 'org.example'
 version = '0.0.1-SNAPSHOT'
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
+repositories {
+    mavenCentral()
+    maven { url "https://repo.spring.io/release" }
 }
 
 ext {
@@ -64,6 +63,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
+tasks.withType(Test).configureEach {
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }
