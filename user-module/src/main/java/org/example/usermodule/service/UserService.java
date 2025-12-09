@@ -1,7 +1,6 @@
 package org.example.usermodule.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.usermodule.dto.*;
 import org.example.usermodule.entity.UserEntity;

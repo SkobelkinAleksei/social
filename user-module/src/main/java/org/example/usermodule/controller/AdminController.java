@@ -36,7 +36,7 @@ public class AdminController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{userId}/profile-user")
+    @GetMapping("/{userId}/profile-user")
     public ResponseEntity<UserFullDto> getUserProfileById(@PathVariable Long userId) {
         return ResponseEntity.ok().body(adminService.getUserProfileById(userId));
     }

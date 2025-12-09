@@ -14,16 +14,16 @@ spring:
         show-sql: true
         database-platform: org.hibernate.dialect.PostgreSQLDialect
 
-    data:
-        redis:
-            host: redis
-            port: 6379
-            timeout: 2000
-            lettuce:
-                pool:
-                    max-active: 8
-                    max-idle: 8
-                    min-idle: 0
+#    data:
+#        redis:
+#            host: redis
+#            port: 6379
+#            timeout: 2000
+#            lettuce:
+#                pool:
+#                    max-active: 8
+#                    max-idle: 8
+#                    min-idle: 0
 
 server:
     port: 8080
@@ -34,5 +34,5 @@ eureka:
             defaultZone: http://localhost:8761/eureka/
 
 security:
-    access-secret: ${ACCESS_SECRET}
-    refresh-secret: ${REFRESH_SECRET}
+    access-secret: VOe5bgn1j6uY+bz0VpoRx/Ns+iDvzGnGM58BqBaanFizwEdCMzlMjPisolnSxQUh0PCgxKqqKtWAeUJzr2bN2A==
+    refresh-secret: KRLeMz77TA1D+uEo4iJbYJcaGgUy6IDzrPw440tAkJU+7cfLjtau8JHnoIAIRvUwRrOMtWq96HX2NYa0YUYKGQ==
