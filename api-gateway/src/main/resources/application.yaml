@@ -37,9 +37,13 @@ spring:
                 redis-rate-limiter.replenishRate: 5
                 redis-rate-limiter.burstCapacity: 5
                 key-resolver: "#{@userKeyResolver}"
+#security:
+#  jwt:
+#    access-secret: ${ACCESS_SECRET}
+
 security:
   jwt:
-    access-secret: ${ACCESS_SECRET}
+    access-secret: VOe5bgn1j6uY+bz0VpoRx/Ns+iDvzGnGM58BqBaanFizwEdCMzlMjPisolnSxQUh0PCgxKqqKtWAeUJzr2bN2A==
 
 eureka:
   client:
