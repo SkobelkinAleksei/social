@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
+import java.util.List;
 
 @RequiredArgsConstructor
 @RequestMapping("/social/v1/users")
@@ -35,7 +36,7 @@ public class UserController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/search")
-    public ResponseEntity<Page<UserDto>> search(
+    public ResponseEntity<List<UserDto>> search(
             UserFilterDto filter,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size

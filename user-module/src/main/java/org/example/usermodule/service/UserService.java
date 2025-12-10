@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
+import java.util.List;
 
 import static java.util.Objects.isNull;
 
@@ -130,7 +131,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Page<UserDto> searchUsers(UserFilterDto filter, int page, int size) {
+    public List<UserDto> searchUsers(UserFilterDto filter, int page, int size) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
 
@@ -139,6 +140,6 @@ public class UserService {
                 pageable
         );
 
-        return users.map(userMapper::toDto);
+        return users.map(userMapper::toDto).toList();
     }
 }

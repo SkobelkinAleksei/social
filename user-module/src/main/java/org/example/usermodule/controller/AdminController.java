@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RequiredArgsConstructor
-@RequestMapping("/social/v1/admin")
+@RequestMapping("/social/v1/admin/user")
 @RestController
 public class AdminController {
     private final AdminService adminService;
@@ -23,20 +23,20 @@ public class AdminController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/user/{userId}")
+    @GetMapping("/{userId}")
     public ResponseEntity<UserDto> getUserById(@PathVariable Long userId) {
         return ResponseEntity.ok().body(adminService.getUserById(userId));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/user/{userId}")
+    @DeleteMapping("/{userId}")
     public ResponseEntity<Void> deleteUserById(@PathVariable Long userId) {
         adminService.deleteUserById(userId);
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/user/{userId}/profile-user")
+    @GetMapping("/{userId}/profile-user")
     public ResponseEntity<UserFullDto> getUserProfileById(@PathVariable Long userId) {
         return ResponseEntity.ok().body(adminService.getUserProfileById(userId));
     }
