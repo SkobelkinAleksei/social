@@ -6,8 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Setter
 @Getter
-@ConfigurationProperties(prefix = "security")
-public class SecurityProperties {
+@ConfigurationProperties(prefix = "security.jwt")
+public class SecurityUserProperties {
     private String accessSecret;
     private String refreshSecret;
 }

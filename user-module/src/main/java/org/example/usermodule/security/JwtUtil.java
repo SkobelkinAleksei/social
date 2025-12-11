@@ -5,7 +5,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
-import org.example.usermodule.dto.JwtUserData;
 import org.example.usermodule.entity.UserEntity;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +18,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class JwtUtil {
 
-    private final SecurityProperties securityProperties;
+    private final SecurityUserProperties securityProperties;
 
     private SecretKey getAccessKey() {
         return Keys.hmacShaKeyFor(
@@ -48,18 +47,6 @@ public class JwtUtil {
                 .setExpiration(Date.from(Instant.now().plus(30, ChronoUnit.DAYS)))
                 .signWith(getRefreshKey(), SignatureAlgorithm.HS256)
                 .compact();
-    }
-
-    public JwtUserData validateAccessToken(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(getAccessKey())
-                .parseClaimsJws(token)
-                .getBody();
-
-        Long id = claims.get("id", Long.class);
-        String role = claims.get("role", String.class);
-
-        return new JwtUserData(id, role);
     }
 
     public Long validateRefreshToken(String token) {

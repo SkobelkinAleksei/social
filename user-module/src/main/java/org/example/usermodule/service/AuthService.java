@@ -2,6 +2,7 @@ package org.example.usermodule.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.example.usermodule.security.JwtUtil;
 import org.example.usermodule.dto.LoginUserDto;
 import org.example.usermodule.dto.authDto.RegistrationUserDto;
 import org.example.usermodule.dto.UserDto;
@@ -10,7 +11,6 @@ import org.example.usermodule.entity.enums.Role;
 import org.example.usermodule.mapper.UserMapper;
 import org.example.usermodule.repository.UserRepository;
 import org.example.usermodule.security.JwtResponse;
-import org.example.usermodule.security.JwtUtil;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;

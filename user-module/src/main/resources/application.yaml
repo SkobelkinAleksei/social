@@ -32,7 +32,12 @@ eureka:
     client:
         service-url:
             defaultZone: http://localhost:8761/eureka/
+    instance:
+        prefer-ip-address: true
+        lease-renewal-interval-in-seconds: 10
+        lease-expiration-duration-in-seconds: 30
 
 security:
-    access-secret: VOe5bgn1j6uY+bz0VpoRx/Ns+iDvzGnGM58BqBaanFizwEdCMzlMjPisolnSxQUh0PCgxKqqKtWAeUJzr2bN2A==
-    refresh-secret: KRLeMz77TA1D+uEo4iJbYJcaGgUy6IDzrPw440tAkJU+7cfLjtau8JHnoIAIRvUwRrOMtWq96HX2NYa0YUYKGQ==
+    jwt:
+        access-secret: VOe5bgn1j6uY+bz0VpoRx/Ns+iDvzGnGM58BqBaanFizwEdCMzlMjPisolnSxQUh0PCgxKqqKtWAeUJzr2bN2A==
+        refresh-secret: KRLeMz77TA1D+uEo4iJbYJcaGgUy6IDzrPw440tAkJU+7cfLjtau8JHnoIAIRvUwRrOMtWq96HX2NYa0YUYKGQ==

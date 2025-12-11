@@ -17,14 +17,15 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
+      default-filters:
+        - PreserveHostHeader
+      forwarded-headers-strategy: framework
 
       routes:
         - id: auth-public
           uri: lb://user-module
           predicates:
-            - Path=/social/v1/public/auth/**
-          filters:
-            - StripPrefix=3
+            - Path=/social/public/v1/auth/**
 
         - id: account-private
           uri: lb://user-module
@@ -37,15 +38,23 @@ spring:
                 redis-rate-limiter.replenishRate: 5
                 redis-rate-limiter.burstCapacity: 5
                 key-resolver: "#{@userKeyResolver}"
-#security:
-#  jwt:
-#    access-secret: ${ACCESS_SECRET}
+
+        - id: post-module
+          uri: lb://post-module
+          predicates:
+            - Path=/social/v1/posts/**
 
 security:
-  jwt:
     access-secret: VOe5bgn1j6uY+bz0VpoRx/Ns+iDvzGnGM58BqBaanFizwEdCMzlMjPisolnSxQUh0PCgxKqqKtWAeUJzr2bN2A==
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty.http.client: DEBUG

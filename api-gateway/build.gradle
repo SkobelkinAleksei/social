@@ -27,12 +27,16 @@ dependencyManagement {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
     implementation "org.springframework.boot:spring-boot-starter-webflux"
     implementation "org.springframework.cloud:spring-cloud-starter-gateway"
     implementation "org.springframework.boot:spring-boot-starter-data-redis-reactive"
     implementation "io.lettuce:lettuce-core"
+
+    // --- VALIDATION ---
+    implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
 
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 
@@ -46,6 +50,7 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
