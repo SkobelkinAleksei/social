@@ -27,6 +27,12 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('USER')")
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserDto> getUserById(@PathVariable Long userId) {
+        return ResponseEntity.ok().body(userService.getUserById(userId));
+    }
+
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/search/by-email")
     public ResponseEntity<UserDto> getUserByEmail(
             @RequestParam String email

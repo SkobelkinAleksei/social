@@ -23,7 +23,6 @@ public class AdminService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
     public List<UserDto> getAllUsers() {
         return userRepository.findAll()
@@ -32,7 +31,6 @@ public class AdminService {
                 .toList();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Cacheable(value = "userById", key = "#userId")
     @Transactional(readOnly = true)
     public UserDto getUserById(Long userId) {
@@ -44,7 +42,6 @@ public class AdminService {
         return userMapper.toDto(userEntity);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @CacheEvict(value = "userById", key = "#userId")
     @Transactional
     public void deleteUserById(Long userId) {
@@ -53,7 +50,6 @@ public class AdminService {
         userRepository.deleteById(user.getId());
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
     public UserFullDto getUserProfileById(Long userId) {
         UserEntity userEntity = userRepository.findById(userId)

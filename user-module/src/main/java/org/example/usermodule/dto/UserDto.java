@@ -11,6 +11,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDto implements Serializable {
+    Long userId;
     String username;
     String lastName;
     String numberPhone;
