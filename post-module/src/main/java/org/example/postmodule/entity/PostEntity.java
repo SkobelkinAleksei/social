@@ -3,7 +3,6 @@ package org.example.postmodule.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.postmodule.dto.ModerationStatusPost;
-import org.example.usermodule.entity.UserEntity;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -24,8 +23,8 @@ public class PostEntity {
     @Column(nullable = false)
     private Long id;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @Column(name = "author_id", nullable = false)
+    private Long authorId;
 
     @Column(nullable = false)
     private String content;
@@ -43,7 +42,7 @@ public class PostEntity {
             name = "post_views",
             joinColumns = @JoinColumn(name = "post_id")
     )
-    @Column(name = "user_id")
+    @Column(name = "author_id")
     private Set<Long> viewSet = new HashSet<>();
 
 //    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

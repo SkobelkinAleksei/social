@@ -8,8 +8,6 @@ import org.example.usermodule.mapper.UserMapper;
 import org.example.usermodule.repository.UserRepository;
 import org.example.usermodule.security.JwtUserData;
 import org.example.usermodule.utils.UserSpecification;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +29,7 @@ public class UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
-    @Cacheable(value = "userByEmail", key = "#email")
+//    @Cacheable(value = "userByEmail", key = "#email")
     @Transactional(readOnly = true)
     public UserDto getUserByEmail(String email) {
         System.out.println("Запрос в базу!");
@@ -40,7 +38,7 @@ public class UserService {
                         .orElseThrow(() -> new EntityNotFoundException("Пользователь не был найден")));
     }
 
-    @CacheEvict(value = {"userByEmail"}, allEntries = true)
+//    @CacheEvict(value = {"userByEmail"}, allEntries = true)
     @Transactional
     public UserDto updateUserAccount(Long userId, UpdateAccountUserDto updateAccountUser) throws AccessDeniedException {
 
@@ -85,13 +83,20 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserFullDto getMyProfile(Long userId) throws AccessDeniedException {
+    public UserFullDto getMyProfile(Long userId, String role) throws AccessDeniedException {
 
         JwtUserData user = (JwtUserData) SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getPrincipal();
         Long authId = user.id();
+        String authRole = user.role();  // Предположим, что JwtUserData хранит роль
 
+        // Проверяем, что роль совпадает
+        if (!authRole.equals(role)) {
+            throw new AccessDeniedException("Нет доступа с этой ролью!");
+        }
+
+        // Проверяем доступ к профилю
         if (!authId.equals(userId)) {
             throw new AccessDeniedException("Нет доступа к профилю!");
         }
@@ -102,6 +107,7 @@ public class UserService {
 
         return userMapper.toFullDto(userEntity);
     }
+
 
     @Transactional(readOnly = true)
     public void updatePassword(
@@ -144,7 +150,7 @@ public class UserService {
         return users.map(userMapper::toDto).toList();
     }
 
-    @Cacheable(value = "userById", key = "#userId")
+//    @Cacheable(value = "userById", key = "#userId")
     @Transactional(readOnly = true)
     public UserDto getUserById(Long userId) {
         UserEntity userEntity = userRepository.findById(userId)

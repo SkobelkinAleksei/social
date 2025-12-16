@@ -1,8 +1,8 @@
 package org.example.usermodule.service;
 
+import io.jsonwebtoken.Claims;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.usermodule.security.JwtUtil;
 import org.example.usermodule.dto.LoginUserDto;
 import org.example.usermodule.dto.authDto.RegistrationUserDto;
 import org.example.usermodule.dto.UserDto;
@@ -11,12 +11,15 @@ import org.example.usermodule.entity.enums.Role;
 import org.example.usermodule.mapper.UserMapper;
 import org.example.usermodule.repository.UserRepository;
 import org.example.usermodule.security.JwtResponse;
+import org.example.usermodule.security.JwtUtil;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
@@ -44,7 +47,11 @@ public class AuthService {
 
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
         userEntity.setRole(Role.USER);
-        return userMapper.toDto(userRepository.save(userEntity));
+        userEntity.setTimeStamp(LocalDateTime.now());
+
+        return userMapper.toDto(
+                userRepository.save(userEntity)
+        );
     }
 
     @Transactional(readOnly = true)
@@ -69,7 +76,9 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public JwtResponse refresh(String refreshToken) {
-        Long userId = jwtUtil.validateRefreshToken(refreshToken);
+        Claims claims = jwtUtil.validateRefreshToken(refreshToken);
+
+        Long userId = claims.get("id", Long.class);
 
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));

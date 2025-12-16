@@ -1,0 +1,66 @@
+services:
+  eureka-server:
+    build: ./
+    container_name: eureka-server
+    ports:
+      - "5767:5767"
+    environment:
+      SERVER_PORT: "5767"
+
+  postgres:
+    image: postgres:16.0-alpine
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: social
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api-gateway:
+    build: ../api-gateway
+    container_name: api-gateway
+    ports:
+      - "8081:8081"
+    environment:
+      SERVER_PORT: 8081
+    depends_on:
+      - eureka-server
+
+  user-module:
+    build: ../user-module
+    container_name: user-module
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      - postgres
+      - eureka-server
+
+  post-module:
+    build: ../post-module
+    container_name: post-module
+    ports:
+      - "8282:8282"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      - postgres
+      - eureka-server
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: postgres@mail.ru
+      PGADMIN_DEFAULT_PASSWORD: password
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:

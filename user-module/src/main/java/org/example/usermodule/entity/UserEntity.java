@@ -6,7 +6,6 @@ import org.example.usermodule.entity.enums.Role;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 
 @Builder
 @Getter
@@ -40,7 +39,7 @@ public class UserEntity {
     private LocalDate birthday;
 
     @Column(columnDefinition = "TIMESTAMP", name = "time_stamp")
-    private LocalDateTime timeStamp = LocalDateTime.now();
+    private LocalDateTime timeStamp;
 
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)

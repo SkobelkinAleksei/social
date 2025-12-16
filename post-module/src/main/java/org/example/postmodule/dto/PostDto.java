@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.example.usermodule.dto.UserDto;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -19,7 +18,7 @@ import java.util.Set;
 public class PostDto implements Serializable {
 
     @NotNull(message = "Пользователь должен быть указан.")
-    Long userId;
+    Long authorId;
 
     @NotBlank(message = "Содержание контента не может быть пустым или состоять только из пробелов.")
     @Size(min = 5, max = 3000, message = "Содержание контента не может быть менее 5 и более 3000 символов.")

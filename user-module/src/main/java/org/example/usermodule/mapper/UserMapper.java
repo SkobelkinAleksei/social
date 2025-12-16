@@ -15,7 +15,7 @@ public interface UserMapper {
     @Mapping(target = "timeStamp", ignore = true)
     UserEntity toEntity(RegistrationUserDto userDto);
 
-    UserEntity toEntity(UserDto userDto);
+//    UserEntity toEntity(UserDto userDto);
 
     UserFullDto toFullDto(UserEntity userEntity);
 
