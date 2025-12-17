@@ -15,7 +15,7 @@ public class UserContextFilter implements GlobalFilter {
         String path = exchange.getRequest().getPath().value();
 
         // Пропускаем публичные эндпоинты
-        if (path.startsWith("/social/public/")) {
+        if (path.startsWith("/social/public/**")) {
             return chain.filter(exchange);
         }
 

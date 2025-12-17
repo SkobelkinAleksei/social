@@ -17,36 +17,29 @@ import java.util.Date;
 @Component
 @RequiredArgsConstructor
 public class JwtUtil {
+
     private final SecurityUserProperties securityProperties;
 
-    private SecretKey getAccessKey() {
-        return Keys.hmacShaKeyFor(Base64.getDecoder().decode(securityProperties.getAccessSecret()));
-    }
-
     private SecretKey getRefreshKey() {
-        return Keys.hmacShaKeyFor(Base64.getDecoder().decode(securityProperties.getRefreshSecret()));
-    }
-
-    public String generateAccessToken(UserEntity user) {
-        return Jwts.builder()
-                .setSubject(user.getId().toString())
-                .claim("id", user.getId())
-                .claim("role", user.getRole().name())
-                .setIssuedAt(new Date())
-                .setExpiration(Date.from(Instant.now().plus(15, ChronoUnit.MINUTES)))
-                .signWith(getAccessKey(), SignatureAlgorithm.HS256)
-                .compact();
+        return Keys.hmacShaKeyFor(
+                Base64.getDecoder().decode(securityProperties.getRefreshSecret())
+        );
     }
 
     public String generateRefreshToken(UserEntity user) {
         return Jwts.builder()
                 .claim("id", user.getId())
-                .setExpiration(Date.from(Instant.now().plus(30, ChronoUnit.DAYS)))
+                .setExpiration(Date.from(
+                        Instant.now().plus(30, ChronoUnit.DAYS)
+                ))
                 .signWith(getRefreshKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public Claims validateRefreshToken(String token) {
-        return Jwts.parser().setSigningKey(getRefreshKey()).parseClaimsJws(token).getBody();
+        return Jwts.parser()
+                .setSigningKey(getRefreshKey())
+                .parseClaimsJws(token)
+                .getBody();
     }
 }

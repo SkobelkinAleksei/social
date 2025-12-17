@@ -1,5 +1,7 @@
 package org.example.apigateway.config;
 
+import lombok.RequiredArgsConstructor;
+import org.example.apigateway.security.SecurityProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,17 +13,16 @@ import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 
-@Configuration
 @EnableWebFluxSecurity
+@RequiredArgsConstructor
+@Configuration
 public class SecurityConfig {
 
-    @Value("${security.access-secret}")
-    private String accessSecret;
+    private final SecurityProperties securityProperties;
 
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
@@ -50,7 +51,7 @@ public class SecurityConfig {
         return NimbusReactiveJwtDecoder
                 .withSecretKey(
                         new SecretKeySpec(
-                                Base64.getDecoder().decode(accessSecret),
+                                Base64.getDecoder().decode(securityProperties.getAccessSecret()),
                                 "HmacSHA256"
                         )
                 )

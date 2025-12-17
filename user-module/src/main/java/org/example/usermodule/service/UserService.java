@@ -6,13 +6,11 @@ import org.example.usermodule.dto.*;
 import org.example.usermodule.entity.UserEntity;
 import org.example.usermodule.mapper.UserMapper;
 import org.example.usermodule.repository.UserRepository;
-import org.example.usermodule.security.JwtUserData;
 import org.example.usermodule.utils.UserSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,12 +38,11 @@ public class UserService {
 
 //    @CacheEvict(value = {"userByEmail"}, allEntries = true)
     @Transactional
-    public UserDto updateUserAccount(Long userId, UpdateAccountUserDto updateAccountUser) throws AccessDeniedException {
-
-        JwtUserData user = (JwtUserData) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getPrincipal();
-        Long authId = user.id();
+    public UserDto updateUserAccount(
+            Long userId,
+            Long authId,
+            UpdateAccountUserDto updateAccountUser
+    ) throws AccessDeniedException {
 
         if (!authId.equals(userId)) {
             throw new AccessDeniedException("Вы не можете обновить чужой аккаунт");
@@ -54,8 +51,6 @@ public class UserService {
         UserEntity userEntity = userRepository.findById(userId).orElseThrow(
                 () -> new EntityNotFoundException("Пользователь не был найден.")
         );
-
-
 
         if (!isNull(updateAccountUser.getUsername())) {
             userEntity.setUsername(updateAccountUser.getUsername());
@@ -83,24 +78,9 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserFullDto getMyProfile(Long userId, String role) throws AccessDeniedException {
-
-        JwtUserData user = (JwtUserData) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getPrincipal();
-        Long authId = user.id();
-        String authRole = user.role();  // Предположим, что JwtUserData хранит роль
-
-        // Проверяем, что роль совпадает
-        if (!authRole.equals(role)) {
-            throw new AccessDeniedException("Нет доступа с этой ролью!");
-        }
-
-        // Проверяем доступ к профилю
-        if (!authId.equals(userId)) {
-            throw new AccessDeniedException("Нет доступа к профилю!");
-        }
-
+    public UserFullDto getMyProfile(
+            Long userId
+    ) {
         UserEntity userEntity = userRepository.findById(userId).orElseThrow(
                 () -> new EntityNotFoundException("Пользователь не был найден.")
         );
@@ -112,13 +92,9 @@ public class UserService {
     @Transactional(readOnly = true)
     public void updatePassword(
             Long userId,
+            Long authId,
             UpdatePasswordUserDto updatePasswordUserDto
     ) throws AccessDeniedException {
-
-        JwtUserData user = (JwtUserData) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getPrincipal();
-        Long authId = user.id();
 
         if (!authId.equals(userId)) {
             throw new AccessDeniedException("Нет доступа для изменения пароля!");
