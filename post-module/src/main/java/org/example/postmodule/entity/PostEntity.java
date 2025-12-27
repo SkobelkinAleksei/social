@@ -2,7 +2,6 @@ package org.example.postmodule.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.postmodule.dto.ModerationStatusPost;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -37,20 +36,29 @@ public class PostEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "publish_at")
+    private LocalDateTime publishAt;
+
     @ElementCollection
     @CollectionTable(
             name = "post_views",
             joinColumns = @JoinColumn(name = "post_id")
     )
-    @Column(name = "author_id")
-    private Set<Long> viewSet = new HashSet<>();
+    @Column(name = "user_id")
+    private Set<Long> viewSet;
 
-//    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    private Set<LikeEntity> likeSet = new HashSet<>();
+//    @ElementCollection
+//    @CollectionTable(
+//            name = "post_likes",
+//            joinColumns = @JoinColumn(name = "post_id")
+//    )
+//    @Column(name = "user_id")
+//    private Set<Long> likeSet;
 //
 //    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 //    private Set<CommentEntity> commentTable = new HashSet<>();
 
+    @Column(name = "status_post", nullable = false)
     @Enumerated(EnumType.STRING)
     private ModerationStatusPost statusPost;
 }

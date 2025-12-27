@@ -1,10 +1,12 @@
 package org.example.postmodule.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.example.postmodule.entity.ModerationStatusPost;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -17,6 +19,8 @@ import java.util.Set;
 @AllArgsConstructor
 public class PostDto implements Serializable {
 
+    Long postId;
+
     @NotNull(message = "Пользователь должен быть указан.")
     Long authorId;
 
@@ -27,15 +31,21 @@ public class PostDto implements Serializable {
     @NotNull(message = "Просмотры не могут быть Null")
     Set<Long> viewSet;
 
+    // Удалить createdAt
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    LocalDateTime timeStamp;
+    LocalDateTime createdAt;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     LocalDateTime updatedAt;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    LocalDateTime publishAt;
+
+    ModerationStatusPost statusPost;
 
 //    @NotNull(message = "Лайки не могут быть Null")
-//    Set<LikeDto> likeSet;
+//    Set<Long> likeSet;
+
 
 //    @NotNull(message = "Комментарии не могут быть Null")
 //    Set<CommentDto> commentTable;

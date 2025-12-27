@@ -21,18 +21,18 @@ spring:
 
         # Public auth (registration, login, refresh)
         - id: auth-public
-          uri: lb://user-module
+          uri: http://localhost:8080
           predicates:
             - Path=/social/public/v1/auth/**
 
         # User module
         - id: user-module
-          uri: lb://user-module
+          uri: http://localhost:8080
           predicates:
             - Path=/social/v1/users/**
 
         - id: admin-module
-          uri: lb://user-module
+          uri: http://localhost:8080
           predicates:
             - Path=/social/v1/admin/user/**
 
@@ -68,6 +68,7 @@ logging:
     org.springframework.cloud.gateway: DEBUG             # Логирование для Spring Cloud Gateway
     reactor.netty.http.client: DEBUG                      # Логирование для реактивного HTTP клиента
     org.springframework.security: DEBUG                    # Логирование для Spring Security
+    org.springframework.security.oauth2: DEBUG
     org.springframework.web: DEBUG                        # Логирование для Spring Web
     org.hibernate.SQL: DEBUG                               # Логирование SQL-запросов Hibernate
     org.springframework.orm.jpa: DEBUG                    # Логирование запросов JPA

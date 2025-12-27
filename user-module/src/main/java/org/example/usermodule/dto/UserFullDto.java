@@ -1,7 +1,7 @@
 package org.example.usermodule.dto;
 
 import lombok.*;
-import org.example.usermodule.entity.enums.Role;
+import org.example.usermodule.entity.enums.enums.Role;
 
 import java.io.Serializable;
 import java.time.LocalDate;

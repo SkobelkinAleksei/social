@@ -1,8 +1,8 @@
 package org.example.usermodule.utils;
 
 import jakarta.persistence.criteria.Predicate;
+import org.example.usermodule.entity.enums.UserEntity;
 import org.example.usermodule.dto.UserFilterDto;
-import org.example.usermodule.entity.UserEntity;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;

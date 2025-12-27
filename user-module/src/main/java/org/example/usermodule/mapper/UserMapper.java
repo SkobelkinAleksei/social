@@ -1,9 +1,9 @@
 package org.example.usermodule.mapper;
 
+import org.example.usermodule.entity.enums.UserEntity;
 import org.example.usermodule.dto.UserFullDto;
 import org.example.usermodule.dto.authDto.RegistrationUserDto;
 import org.example.usermodule.dto.UserDto;
-import org.example.usermodule.entity.UserEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -19,5 +19,6 @@ public interface UserMapper {
 
     UserFullDto toFullDto(UserEntity userEntity);
 
+    @Mapping(target = "userId", source = "id")
     UserDto toDto(UserEntity userEntity);
 }

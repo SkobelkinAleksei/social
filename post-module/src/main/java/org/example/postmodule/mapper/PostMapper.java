@@ -2,10 +2,10 @@ package org.example.postmodule.mapper;
 
 import org.example.postmodule.dto.NewPostDto;
 import org.example.postmodule.dto.PostDto;
+import org.example.postmodule.dto.PostFullDto;
 import org.example.postmodule.entity.PostEntity;
-import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface PostMapper {
@@ -13,7 +13,10 @@ public interface PostMapper {
 
     PostEntity toEntity(NewPostDto newPostDto);
 
+    @Mapping(target = "postId", source = "id")
     PostDto toDto(PostEntity postEntity);
+
+    PostFullDto toFullDto(PostEntity postEntity);
 
 //    @AfterMapping
 //    default void linkLikeSet(@MappingTarget PostEntity postEntity) {

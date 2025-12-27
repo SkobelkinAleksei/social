@@ -1,35 +1,91 @@
 package org.example.postmodule.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.postmodule.dto.NewPostDto;
 import org.example.postmodule.dto.PostDto;
 import org.example.postmodule.dto.UpdatePostDto;
-import org.example.postmodule.service.PostService;
+import org.example.postmodule.entity.ModerationStatusPost;
+import org.example.postmodule.service.UserPostService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.file.AccessDeniedException;
+import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/social/v1/posts")
+@RequestMapping("/api/v1/social/posts")
 @RestController
 public class PostController {
-    private final PostService postService;
+    private final UserPostService postService;
 
-    @PostMapping("/create-post")
-    public ResponseEntity<PostDto> createPost(
-            @RequestBody NewPostDto newPostDto,
-            @RequestHeader("X-User-Id") Long userId
+    @GetMapping("/{userId}/{postId}")
+    public ResponseEntity<PostDto> getPostByIdForUser(
+            @PathVariable(name = "userId") Long userId,
+            @PathVariable(name = "postId") Long postId
     ) {
-        return ResponseEntity.ok().body(postService.createPost(newPostDto, userId));
+        log.info("[INFO] Пришел запрос от пользователя с id: {} на получение поста с id: {}", userId, postId);
+        return ResponseEntity.ok().body(postService.getPostByIdForUser(userId, postId));
     }
 
-    @PutMapping("/{postId}/update-post")
+    @GetMapping("/id/{postId}")
+    public ResponseEntity<PostDto> getPostById(
+            @PathVariable(name = "postId") Long postId
+    ) {
+        log.info("[INFO] Пришел запрос на получение поста с id: {}", postId);
+        return ResponseEntity.ok().body(postService.getPostById(postId));
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<PostDto>> getUserPosts(
+            @PathVariable(name = "userId") Long userId
+    ) {
+        log.info("[INFO] Пришел запрос на получение всех постов пользователя с id: {}", userId);
+        return ResponseEntity.ok().body(postService.getUserPosts(userId));
+    }
+
+    @GetMapping("/{authorId}")
+    public ResponseEntity<List<PostDto>> findUserPostsByStatus(
+            @PathVariable(name = "authorId") Long authorId,
+            @RequestParam(required = false) List<ModerationStatusPost> moderationStatus,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+
+        log.info("[INFO] Пришел запрос на поиск постов автора id: {} по статусам: {}, страница: {}, размер: {}",
+                authorId, moderationStatus, page, size);
+        return ResponseEntity.ok().body(postService.findUserPostsByStatus(authorId, moderationStatus, page, size));
+    }
+
+    @PostMapping("/{userId}")
+    public ResponseEntity<Long> submitPost(
+            @RequestBody NewPostDto newPostDto,
+            @PathVariable(name = "userId") Long userId
+    ) {
+        log.info("[INFO] Пришел запрос на создание нового поста от автора с id: {}", userId);
+        return ResponseEntity.ok().body(
+                postService.submitPost(newPostDto, userId)
+        );
+    }
+
+    @PutMapping("/{userId}/{postId}/update-post")
     public ResponseEntity<PostDto> updatePost(
             @PathVariable Long postId,
             @RequestBody UpdatePostDto updatePostDto,
-            @RequestHeader("X-User-id") Long userId
-    ) throws AccessDeniedException {
+            @PathVariable(name = "userId") Long userId
+    ) {
+        log.info("[INFO] Пришел запрос на обновление поста с id: {} пользователем с id: {}", postId, userId);
         return ResponseEntity.ok().body(postService.updatePost(postId, updatePostDto, userId));
+    }
+
+    @PutMapping("/{userId}/{postId}")
+    public ResponseEntity<String> deletePost(
+            @PathVariable(name = "postId") Long postId,
+            @PathVariable(name = "userId") Long userId
+    ) {
+//        postService.deletePost(postId, userId);
+//        return ResponseEntity.noContent().build();
+        log.info("[INFO] Пришел запрос удаление поста с id: {} пользователем с id: {}", postId, userId);
+        return ResponseEntity.ok().body(postService.deletePost(postId, userId));
     }
 }

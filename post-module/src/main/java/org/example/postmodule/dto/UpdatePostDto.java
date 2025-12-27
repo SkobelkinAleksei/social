@@ -17,7 +17,4 @@ public class UpdatePostDto implements Serializable {
     @Size(min = 5, max = 100, message = "Длина [CONTENT] должна быть от 5 до 100 символов")
     @NotBlank(message = "[CONTENT] не может быть пустым")
     String content;
-
-    @NotNull(message = "Пользователь должен быть указан.")
-    Long authorId;
 }
