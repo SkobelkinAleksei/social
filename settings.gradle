@@ -17,4 +17,5 @@ dependencyResolutionManagement {
 rootProject.name = "social-new"
 
 include("api-gateway", "user-module", "comment-module",
-        "like-post-module", "eureka-server", "post-module", "http-core", "common", "live-chat-module")
+        "like-post-module", "eureka-server", "post-module",
+        "http-core", "common", "live-chat-module", 'friend-module', 'security')

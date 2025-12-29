@@ -1,0 +1,162 @@
+package org.example.friendmodule.service;
+
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.example.common.security.SecurityUtil;
+import org.example.friendmodule.dto.FriendDto;
+import org.example.friendmodule.dto.FriendRequestDto;
+import org.example.friendmodule.entity.FriendEntity;
+import org.example.friendmodule.entity.FriendRequestEntity;
+import org.example.friendmodule.entity.FriendRequestStatus;
+import org.example.friendmodule.entity.ResponseFriendRequest;
+import org.example.friendmodule.mapper.FriendRequestMapper;
+import org.example.friendmodule.repository.FriendRepository;
+import org.example.friendmodule.repository.FriendRequestRepository;
+import org.example.friendmodule.util.FriendLookupService;
+import org.example.friendmodule.util.FriendRequestSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.util.Objects.isNull;
+
+@Service
+@RequiredArgsConstructor
+public class FriendRequestService {
+    private final FriendRequestRepository friendRequestRepository;
+    private final FriendService friendService;
+    private final FriendRequestMapper friendRequestMapper;
+    private final FriendLookupService friendLookupService;
+
+    @Transactional
+    public FriendRequestDto addRequestFriend(Long requesterId, Long addresseeId) {
+
+        if (requesterId.equals(addresseeId)) {
+            throw new IllegalArgumentException("Нельзя добавить себя в друзья");
+        }
+
+        Long requesterIdFromApi = friendLookupService.getUserIdFromApi(requesterId);
+        Long addresseeIdFromApi = friendLookupService.getUserIdFromApi(addresseeId);
+
+        friendRequestRepository.findBetweenUsers(
+                requesterIdFromApi,
+                addresseeIdFromApi
+        ).ifPresent(existing -> {
+            throw new IllegalStateException(
+                    "Связь между пользователями уже существует"
+            );
+        });
+
+        FriendRequestEntity friendRequestEntity = new FriendRequestEntity();
+        friendRequestEntity.setRequesterId(requesterIdFromApi);
+        friendRequestEntity.setAddresseeId(addresseeIdFromApi);
+        friendRequestEntity.setStatus(FriendRequestStatus.PENDING);
+        friendRequestEntity.setRespondedAt(LocalDateTime.now());
+
+        return friendRequestMapper.toDto(friendRequestRepository.save(friendRequestEntity));
+    }
+
+    @Transactional
+    public void deleteRequestFriend(Long requesterId, Long addresseeId) {
+
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+
+        Long requesterIdFromApi = friendLookupService.getUserIdFromApi(requesterId);
+        Long addresseeIdFromApi = friendLookupService.getUserIdFromApi(addresseeId);
+
+        if (!requesterIdFromApi.equals(currentUserId)) {
+            throw new AccessDeniedException("Только автор заявки может её удалить!");
+        }
+
+        FriendRequestEntity requestEntity = friendRequestRepository
+                .findByRequesterIdAndAddresseeId(requesterIdFromApi, addresseeIdFromApi);
+
+        if (isNull(requestEntity)) {
+            throw new EntityNotFoundException("Такого запроса нет!");
+        }
+
+        friendRequestRepository.deleteById(requestEntity.getId());
+    }
+
+    @Transactional
+    public void deleteRequestById(Long requestId) {
+        FriendRequestEntity requestEntity = friendRequestRepository.findById(requestId)
+                .orElseThrow(() -> new EntityNotFoundException("Такой запрос не был найден! "));
+
+        friendRequestRepository.deleteById(requestEntity.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public List<FriendRequestDto> getRequesterRequestSpecification(FriendRequestStatus status, int page, int size) {
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Specification<FriendRequestEntity> spec = FriendRequestSpecification.requestsByStatus(currentUserId, status);
+        Page<FriendRequestEntity> requestsPage = friendRequestRepository.findAll(spec, pageable);
+
+        return requestsPage.getContent()
+                .stream()
+                .map(friendRequestMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<FriendRequestDto> getUserRequestsFromFriends(int page, int size) {
+
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        Specification<FriendRequestEntity> spec = FriendRequestSpecification
+                .incomingPendingRequests(currentUserId);
+
+        Page<FriendRequestEntity> requestsPage = friendRequestRepository
+                .findAll(spec, pageable);
+
+        return requestsPage.getContent()
+                .stream()
+                .map(friendRequestMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public String responseToRequest(Long requestId, ResponseFriendRequest status, Long userId) {
+
+        Long userIdFromApi = friendLookupService.getUserIdFromApi(userId);
+
+        if (isNull(status)) {
+            throw new IllegalArgumentException("Новый статус не может быть Null!");
+        }
+
+//        Long currentUserId = SecurityUtil.getCurrentUserId();
+
+        FriendRequestEntity requestEntity = friendRequestRepository.findById(requestId).orElseThrow(
+                () -> new EntityNotFoundException("Запрос не был найден!"));
+
+        if (!requestEntity.getAddresseeId().equals(userIdFromApi)) {
+            throw new AccessDeniedException("Только владелец может изменять свои входящие заявки");
+        }
+
+        if (status.equals(ResponseFriendRequest.ACCEPTED)) {
+            requestEntity.setStatus(FriendRequestStatus.ACCEPTED);
+
+            FriendEntity friendEntity = new FriendEntity();
+            friendEntity.setUserId1(userId);
+            friendEntity.setUserId2(requestEntity.getRequesterId());
+            friendService.createFriendship(friendEntity);
+        } else if (status.equals(ResponseFriendRequest.REJECTED)) {
+            requestEntity.setStatus(FriendRequestStatus.REJECTED);
+        }
+
+        return requestEntity.getStatus().toString();
+    }
+}

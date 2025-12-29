@@ -2,6 +2,7 @@ package org.example.usermodule.controller.restController;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.usermodule.dto.authDto.LoginResponse;
 import org.example.usermodule.dto.authDto.LoginUserDto;
 import org.example.usermodule.dto.authDto.RegistrationUserDto;
 import org.example.usermodule.dto.UserDto;
@@ -28,7 +29,7 @@ public class PublicAuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(
+    public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginUserDto loginUserDto
     ) throws AccessDeniedException {
         return ResponseEntity.ok(authService.login(loginUserDto));

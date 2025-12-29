@@ -27,10 +27,19 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/login", "/api/v1/auth/login").permitAll()  // HTML + API
+                    auth
+                            .requestMatchers("/login", "/api/v1/auth/login").permitAll()
                             .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
                             .requestMatchers("/social/public/v1/auth/**").permitAll()
+
+                            // спец-эндпоинт для post-module (открытый)
+                            .requestMatchers("/api/v1/social/users/post/**").permitAll()
+                            .requestMatchers("/api/v1/social/friends/public/**").permitAll()
+
+                            // остальные user-эндпоинты под ролями
                             .requestMatchers("/api/v1/social/users/**").hasAnyRole("USER", "ADMIN")
+                            .requestMatchers("/api/v1/social/posts/**").hasAnyRole("USER","ADMIN")
+                            .requestMatchers("/api/v1/social/friends/**").hasAnyRole("USER","ADMIN")
                             .requestMatchers("/api/v1/social/admin/**").hasRole("ADMIN")
                             .anyRequest().authenticated();
                 })

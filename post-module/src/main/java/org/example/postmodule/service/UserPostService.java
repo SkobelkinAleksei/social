@@ -4,7 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.common.dto.*;
-import org.example.httpcore.httpCore.IHttpCore;
+import org.example.httpcore.httpCore.SecuredHttpCore;
 import org.example.postmodule.entity.ModerationStatusPost;
 import org.example.postmodule.dto.NewPostDto;
 import org.example.postmodule.dto.PostDto;
@@ -38,7 +38,7 @@ public class UserPostService {
 
     private final PostRepository postRepository;
     private final PostMapper postMapper;
-    private final IHttpCore iHttpCore;
+    private final SecuredHttpCore iHttpCore;
     private final PostLookupService postLookupService;
     private final PostAccessValidator postAccessValidator;
 
@@ -189,7 +189,7 @@ public class UserPostService {
         );
 
         ResponseEntity<UserDto> userDtoResponseEntity =
-                iHttpCore.get(requestData, null, UserDto.class);
+                iHttpCore.get(requestData, UserDto.class);
 
         if (isNull(userDtoResponseEntity.getBody())) {
             log.warn("[INFO] Пользователь с id: {} не найден во внешнем сервисе", authorId);

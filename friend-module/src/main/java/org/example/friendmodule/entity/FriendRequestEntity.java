@@ -1,0 +1,39 @@
+package org.example.friendmodule.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
+
+@Builder
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "friend_requests")
+public class FriendRequestEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "requester_id", nullable = false)
+    private Long requesterId;     // кто отправил
+
+    @Column(name = "addressee_id", nullable = false)
+    private Long addresseeId;     // кому отправили
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private FriendRequestStatus status; // PENDING, ACCEPTED, REJECTED
+
+    @CreationTimestamp
+    @Column(name = "requested_at")
+    private LocalDateTime requestedAt;
+
+    @UpdateTimestamp
+    @Column(name = "responded_at")
+    private LocalDateTime respondedAt;
+}

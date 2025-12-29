@@ -19,6 +19,7 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/createUser")
     public ResponseEntity<UserDto> createUser(
             @Valid @RequestBody RegistrationUserDto registrationUserDto
@@ -28,6 +29,7 @@ public class UserController {
         return ResponseEntity.ok().body(userService.createUser(registrationUserDto));
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/{userId}")
     public ResponseEntity<UserFullDto> getMyProfile(
             @PathVariable(name = "userId") Long userId
@@ -36,13 +38,14 @@ public class UserController {
         return ResponseEntity.ok().body(userService.getMyProfile(userId));
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/post/{userId}")
     public ResponseEntity<UserDto> getUserById(@PathVariable Long userId) {
         log.info("[INFO] Пришел запрос на получение пользователя по id (для постов): {}", userId);
         return ResponseEntity.ok().body(userService.getUserById(userId));
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/search/by-email")
     public ResponseEntity<UserDto> getUserByEmail(
             @RequestParam String email
@@ -51,6 +54,7 @@ public class UserController {
         return ResponseEntity.ok().body(userService.getUserByEmail(email));
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/search")
     public ResponseEntity<List<UserDto>> search(
             UserFilterDto filter,
@@ -62,6 +66,7 @@ public class UserController {
         return ResponseEntity.ok().body(userService.searchUsers(filter, page, size));
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PutMapping("/account/{userId}/update")
     public ResponseEntity<UserDto> updateUserAccount(
             @PathVariable(name = "userId") Long userId,
@@ -71,6 +76,7 @@ public class UserController {
         return ResponseEntity.ok().body(userService.updateUserAccount(userId, updateAccountUser));
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PutMapping("/account/{userId}/update/pass")
     public ResponseEntity<Void> updatePasswordUser(
             @PathVariable(name = "userId") Long userId,

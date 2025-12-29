@@ -19,7 +19,4 @@ public class UserDto implements Serializable {
     String numberPhone;
     LocalDate birthday;
     List<?> authorities;
-
-//    List<FriendEntity> friendList;
-//    List<PostEntity> postList;
 }

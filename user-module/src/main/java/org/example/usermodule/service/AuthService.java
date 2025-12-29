@@ -1,6 +1,7 @@
 package org.example.usermodule.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.usermodule.dto.authDto.LoginResponse;
 import org.example.usermodule.entity.enums.UserEntity;
 import org.example.usermodule.entity.enums.enums.Role;
 import org.example.usermodule.dto.authDto.LoginUserDto;
@@ -51,7 +52,7 @@ public class AuthService {
     }
 
     @Transactional(readOnly = true)
-    public String login(LoginUserDto dto) throws AccessDeniedException {
+    public LoginResponse login(LoginUserDto dto) throws AccessDeniedException {
         Authentication authenticate = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         dto.getEmail(),
@@ -64,7 +65,7 @@ public class AuthService {
         if (!user.isEnabled()) {
             throw new AccessDeniedException("Аккаунт недоступен!");
         }
-
-        return authUtil.generateAccessToken(user);
+        String token = authUtil.generateAccessToken(user);
+        return new LoginResponse(token, user.getId());
     }
 }

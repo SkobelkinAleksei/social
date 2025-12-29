@@ -8,6 +8,7 @@ import org.example.postmodule.dto.UpdatePostDto;
 import org.example.postmodule.entity.ModerationStatusPost;
 import org.example.postmodule.service.UserPostService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.List;
 public class PostController {
     private final UserPostService postService;
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/{userId}/{postId}")
     public ResponseEntity<PostDto> getPostByIdForUser(
             @PathVariable(name = "userId") Long userId,
@@ -28,6 +30,7 @@ public class PostController {
         return ResponseEntity.ok().body(postService.getPostByIdForUser(userId, postId));
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/id/{postId}")
     public ResponseEntity<PostDto> getPostById(
             @PathVariable(name = "postId") Long postId
@@ -36,6 +39,7 @@ public class PostController {
         return ResponseEntity.ok().body(postService.getPostById(postId));
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<PostDto>> getUserPosts(
             @PathVariable(name = "userId") Long userId
@@ -44,6 +48,7 @@ public class PostController {
         return ResponseEntity.ok().body(postService.getUserPosts(userId));
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/{authorId}")
     public ResponseEntity<List<PostDto>> findUserPostsByStatus(
             @PathVariable(name = "authorId") Long authorId,
@@ -57,6 +62,7 @@ public class PostController {
         return ResponseEntity.ok().body(postService.findUserPostsByStatus(authorId, moderationStatus, page, size));
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/{userId}")
     public ResponseEntity<Long> submitPost(
             @RequestBody NewPostDto newPostDto,
@@ -68,6 +74,7 @@ public class PostController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PutMapping("/{userId}/{postId}/update-post")
     public ResponseEntity<PostDto> updatePost(
             @PathVariable Long postId,
@@ -78,6 +85,7 @@ public class PostController {
         return ResponseEntity.ok().body(postService.updatePost(postId, updatePostDto, userId));
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PutMapping("/{userId}/{postId}")
     public ResponseEntity<String> deletePost(
             @PathVariable(name = "postId") Long postId,
