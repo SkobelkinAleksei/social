@@ -2,6 +2,7 @@ package org.example.friendmodule.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.common.security.SecurityUtil;
 import org.example.friendmodule.dto.FriendRequestDto;
 import org.example.friendmodule.entity.FriendRequestStatus;
 import org.example.friendmodule.entity.ResponseFriendRequest;
@@ -22,19 +23,19 @@ public class FriendRequestController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping
     public ResponseEntity<FriendRequestDto> addRequestFriend(
-            @RequestParam Long requesterId,
             @RequestParam Long addresseeId
     ) {
-        return ResponseEntity.ok().body(friendRequestService.addRequestFriend(requesterId, addresseeId));
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        return ResponseEntity.ok().body(friendRequestService.addRequestFriend(currentUserId, addresseeId));
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @DeleteMapping
     public ResponseEntity<Void> deleteRequestFriend(
-            @RequestParam Long requesterId,
             @RequestParam Long addresseeId
     ) {
-        friendRequestService.deleteRequestFriend(requesterId, addresseeId);
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        friendRequestService.deleteRequestFriend(currentUserId, addresseeId);
         return ResponseEntity.noContent().build();
     }
 
@@ -45,9 +46,9 @@ public class FriendRequestController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-
+        Long currentUserId = SecurityUtil.getCurrentUserId();
         return ResponseEntity.ok().body(
-                friendRequestService.getRequesterRequestSpecification(status, page, size)
+                friendRequestService.getRequesterRequestSpecification(currentUserId, status, page, size)
         );
     }
 
@@ -57,9 +58,9 @@ public class FriendRequestController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-
+        Long currentUserId = SecurityUtil.getCurrentUserId();
         return ResponseEntity.ok().body(
-                friendRequestService.getUserRequestsFromFriends(page, size)
+                friendRequestService.getUserRequestsFromFriends(currentUserId, page, size)
         );
     }
 
@@ -67,11 +68,11 @@ public class FriendRequestController {
     @PutMapping("/{requestId}")
     public ResponseEntity<String> responseToRequest(
             @PathVariable Long requestId,
-            @RequestParam ResponseFriendRequest status,
-            @RequestParam Long userId
+            @RequestParam ResponseFriendRequest status
     ) {
+        Long currentUserId = SecurityUtil.getCurrentUserId();
         return ResponseEntity.ok().body(
-                friendRequestService.responseToRequest(requestId, status, userId)
+                friendRequestService.responseToRequest(requestId, status, currentUserId)
         );
     }
 }

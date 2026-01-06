@@ -13,12 +13,14 @@ import java.util.Optional;
 public interface FriendRepository extends JpaRepository<FriendEntity, Long> {
 
     @Query("""
-        SELECT fe
-        FROM FriendEntity fe
-        WHERE (fe.userId1= :userId1 AND fe.userId2= :userId2)
-            OR (fe.userId1= :userId2 AND fe.userId2= :userId1)
-    """)
-    FriendEntity findEntityByUserId1AndUserId2(Long userId1, Long userId2);
+    SELECT fe
+    FROM FriendEntity fe
+    WHERE (fe.userId1 = :userId1 AND fe.userId2 = :userId2)
+       OR (fe.userId1 = :userId2 AND fe.userId2 = :userId1)
+    ORDER BY fe.id
+    LIMIT 1
+""")
+    Optional<FriendEntity> findEntityByUserId1AndUserId2(Long userId1, Long userId2);
 
     @Query("""
         SELECT fe

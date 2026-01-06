@@ -1,10 +1,11 @@
 package org.example.usermodule.controller.restController;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.common.security.SecurityUtil;
 import org.example.usermodule.dto.*;
-import org.example.usermodule.dto.authDto.RegistrationUserDto;
 import org.example.usermodule.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,28 +21,27 @@ public class UserController {
     private final UserService userService;
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @PostMapping("/createUser")
-    public ResponseEntity<UserDto> createUser(
-            @Valid @RequestBody RegistrationUserDto registrationUserDto
-    ) {
-        log.info("[INFO] Пришел запрос на создание пользователя с email: {} и телефоном: {}",
-                registrationUserDto.getEmail(), registrationUserDto.getNumberPhone());
-        return ResponseEntity.ok().body(userService.createUser(registrationUserDto));
-    }
-
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @GetMapping("/{userId}")
+    @GetMapping("/me")
     public ResponseEntity<UserFullDto> getMyProfile(
-            @PathVariable(name = "userId") Long userId
     ) {
-        log.info("[INFO] Пришел запрос на получение профиля пользователя с id: {}", userId);
-        return ResponseEntity.ok().body(userService.getMyProfile(userId));
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        log.info("[INFO] Пришел запрос на получение профиля пользователя с id: {}", currentUserId);
+        return ResponseEntity.ok().body(userService.getMyProfile(currentUserId));
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @GetMapping("/post/{userId}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable Long userId) {
-        log.info("[INFO] Пришел запрос на получение пользователя по id (для постов): {}", userId);
+    @GetMapping("/post")
+    public ResponseEntity<UserDto> getUserById(
+    ) {
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        log.info("[INFO] Пришел запрос на получение пользователя по id: {}", currentUserId);
+        return ResponseEntity.ok().body(userService.getUserById(currentUserId));
+    }
+
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @GetMapping("/public/{userId}")
+    public ResponseEntity<UserDto> getUserPublic(@PathVariable Long userId) {
+        log.info("[INFO] Пришел запрос на получение пользователя по id={} для друзей", userId);
         return ResponseEntity.ok().body(userService.getUserById(userId));
     }
 
@@ -55,9 +55,9 @@ public class UserController {
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @GetMapping("/search")
+    @PostMapping("/search")
     public ResponseEntity<List<UserDto>> search(
-            UserFilterDto filter,
+            @RequestBody(required = false) UserFilterDto filter,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
@@ -67,23 +67,23 @@ public class UserController {
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @PutMapping("/account/{userId}/update")
+    @PutMapping("/account/update")
     public ResponseEntity<UserDto> updateUserAccount(
-            @PathVariable(name = "userId") Long userId,
             @Valid @RequestBody UpdateAccountUserDto updateAccountUser
     ) {
-        log.info("[INFO] Пришел запрос на обновление аккаунта пользователя с id: {}", userId);
-        return ResponseEntity.ok().body(userService.updateUserAccount(userId, updateAccountUser));
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        log.info("[INFO] Пришел запрос на обновление аккаунта пользователя с id: {}", currentUserId);
+        return ResponseEntity.ok().body(userService.updateUserAccount(currentUserId, updateAccountUser));
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @PutMapping("/account/{userId}/update/pass")
+    @PutMapping("/account/update/pass")
     public ResponseEntity<Void> updatePasswordUser(
-            @PathVariable(name = "userId") Long userId,
             @Valid @RequestBody UpdatePasswordUserDto updatePasswordUserDto
     ) {
-        log.info("[INFO] Пришел запрос на обновление пароля пользователя с id: {}", userId);
-        userService.updatePassword(userId, updatePasswordUserDto);
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        log.info("[INFO] Пришел запрос на обновление пароля пользователя с id: {}", currentUserId);
+        userService.updatePassword(currentUserId, updatePasswordUserDto);
         return ResponseEntity.noContent().build();
     }
 }

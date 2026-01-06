@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.common.dto.*;
+import org.example.common.dto.user.UserDto;
 import org.example.httpcore.httpCore.SecuredHttpCore;
 import org.example.postmodule.entity.ModerationStatusPost;
 import org.example.postmodule.dto.NewPostDto;
@@ -54,7 +55,7 @@ public class UserPostService {
     @Transactional
     public Long submitPost(NewPostDto newPostDto, Long authorId) {
         log.info("[INFO] Создание нового поста от автора с id: {}", authorId);
-        Long userId = getUserFromApi(authorId);
+        Long userId = getUserFromApi();
 
         PostEntity postEntity = postMapper.toEntity(newPostDto);
 
@@ -75,7 +76,7 @@ public class UserPostService {
     @Transactional
     public PostDto updatePost(Long postId, UpdatePostDto updatePostDto, Long userId) {
         log.info("[INFO] Обновление поста с id: {} пользователем с id: {}", postId, userId);
-        Long authorId = getUserFromApi(userId);
+        Long authorId = getUserFromApi();
 
         PostEntity postEntity = postLookupService.getById(postId);
 
@@ -99,7 +100,7 @@ public class UserPostService {
     public String deletePost(Long userId, Long postId) {
 
         log.info("[INFO] Удаление поста с id: {} пользователем с id: {}", postId, userId);
-        Long authorId = getUserFromApi(userId);
+        Long authorId = getUserFromApi();
 
         PostEntity postEntity = postLookupService.getById(postId);
 
@@ -115,7 +116,7 @@ public class UserPostService {
     public PostDto getPostByIdForUser(Long userId, Long postId) {
 
         log.info("[INFO] Пользователь с id: {} запрашивает пост с id: {}", userId, postId);
-        Long userFromApi = getUserFromApi(userId);
+        Long userFromApi = getUserFromApi();
 
         PostEntity postEntity = postLookupService.getById(postId);
 
@@ -138,9 +139,8 @@ public class UserPostService {
     @Transactional(readOnly = true)
     public List<PostDto> getUserPosts(Long userId) {
         log.info("[INFO] Получение списка постов для пользователя с id: {}", userId);
-        Long userFromApi = getUserFromApi(userId);
 
-        List<PostEntity> allPostsByAuthorId = postRepository.findAllByAuthorId(userFromApi);
+        List<PostEntity> allPostsByAuthorId = postRepository.findAllByAuthorId(userId);
 
         List<PostDto> postDtoList = allPostsByAuthorId.stream()
                 .filter(
@@ -152,7 +152,7 @@ public class UserPostService {
                 ).toList();
 
         log.info("[INFO] Для пользователя с id: {} найдено опубликованных постов: {}",
-                userFromApi, postDtoList.size());
+                userId, postDtoList.size());
         return postDtoList;
     }
 
@@ -166,7 +166,7 @@ public class UserPostService {
         //Это планируется, что автор постов сможет смотреть свои посты по статусам
         log.info("[INFO] Поиск постов автора id: {} по статусам: {}, страница: {}, размер: {}",
                 authorId, moderationStatus, page, size);
-        Long userFromApi = getUserFromApi(authorId);
+        Long userFromApi = getUserFromApi();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("publishAt").descending());
         Specification<PostEntity> spec = PostStatusSpecification
@@ -180,11 +180,10 @@ public class UserPostService {
         return postDtoList;
     }
 
-    protected Long getUserFromApi(Long authorId) {
-        log.info("[INFO] Запрос данных пользователя по id: {} во внешний сервис", authorId);
+    protected Long getUserFromApi() {
+        log.info("[INFO] Запрос данных пользователя во внешний сервис");
         RequestData requestData = new RequestData(
-                "http://localhost:8080/api/v1/social/users/post/%s"
-                        .formatted(authorId),
+                "http://localhost:8080/api/v1/social/users/post",
                 null
         );
 
@@ -192,7 +191,6 @@ public class UserPostService {
                 iHttpCore.get(requestData, UserDto.class);
 
         if (isNull(userDtoResponseEntity.getBody())) {
-            log.warn("[INFO] Пользователь с id: {} не найден во внешнем сервисе", authorId);
             throw new EntityNotFoundException("Пользователь по GET запросу не найден!.");
         }
 

@@ -18,8 +18,8 @@ import java.util.List;
 @Slf4j
 public class AdminService {
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
     private final UserLookupService userLookupService;
+    private final UserMapper userMapper;
 
     @Transactional(readOnly = true)
     public List<UserDto> getAllUsers() {

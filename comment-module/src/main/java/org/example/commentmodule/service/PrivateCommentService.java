@@ -9,7 +9,7 @@ import org.example.commentmodule.entity.CommentStatus;
 import org.example.commentmodule.mapper.CommentMapper;
 import org.example.commentmodule.repository.CommentRepository;
 import org.example.commentmodule.util.CommentLookupService;
-import org.example.common.dto.PostDto;
+import org.example.common.dto.post.PostDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +41,7 @@ public class PrivateCommentService {
     public String deleteCommentById(Long commentId, Long postAuthorId) {
         CommentEntity commentEntity = commentRepository.findById(commentId).orElseThrow(
                 () -> new EntityNotFoundException("Комментарий не был найден!"));
-        PostDto postDtoFromApi = commentLookupService.getPostDtoFromApi(commentEntity.getPostId(), postAuthorId);
+        PostDto postDtoFromApi = commentLookupService.getPostDtoFromApi(commentEntity.getPostId());
 
         if (!postDtoFromApi.getAuthorId().equals(postAuthorId)) {
             throw new IllegalArgumentException("Нет доступа для удаления комментария!");

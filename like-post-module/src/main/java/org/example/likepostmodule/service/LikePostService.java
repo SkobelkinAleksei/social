@@ -19,7 +19,6 @@ import java.util.Optional;
 @Service
 public class LikePostService {
     private final LikePostRepository likeRepository;
-    private final LikePostLookupService likePostLookupService;
     private final LikePostMapper likeMapper;
 
     @Transactional(readOnly = true)
@@ -37,36 +36,43 @@ public class LikePostService {
     @Transactional
     public String toggleLike(Long postId, Long authorId) {
         log.info("[INFO] Лайк-дизлайк для поста id: {} пользователем id: {}", postId, authorId);
-        Long postIdFromApi = likePostLookupService.getPostFromApi(postId);
-        Long userIdFromApi = likePostLookupService.getUserFromApi(authorId);
 
-        Optional<LikePostEntity> optionalLike = likeRepository.findByPostIdAndAuthorId(postIdFromApi, userIdFromApi);
+        Optional<LikePostEntity> optionalLike = likeRepository.findByPostIdAndAuthorId(postId, authorId);
 
         if (optionalLike.isPresent()) {
             LikePostEntity likeEntity = optionalLike.get();
             log.info("[INFO] Найден существующий лайк id: {} со статусом: {}",
                     likeEntity.getId(), likeEntity.getLikeStatus());
 
-            if (likeEntity.getLikeStatus().equals(LikeStatus.ACTIVE)) {
+            if (likeEntity.getLikeStatus() == LikeStatus.ACTIVE) {
                 likeEntity.setLikeStatus(LikeStatus.NO_ACTIVE);
                 log.info("[INFO] Лайк id: {} переключен в статус NO_ACTIVE", likeEntity.getId());
             } else {
                 likeEntity.setLikeStatus(LikeStatus.ACTIVE);
                 log.info("[INFO] Лайк id: {} переключен в статус ACTIVE", likeEntity.getId());
             }
+            likeRepository.save(likeEntity);
+            log.info("[INFO] СОХРАНЕНО likeEntity id: {}", likeEntity.getId());
 
             return likeEntity.getLikeStatus().toString();
         } else {
             log.info("[INFO] Лайк для поста id: {} и пользователя id: {} не найден. Создаем новый.",
-                    postIdFromApi, userIdFromApi);
+                    postId, authorId);
             LikePostEntity likePostEntity = new LikePostEntity();
 
-            likePostEntity.setPostId(postIdFromApi);
-            likePostEntity.setAuthorId(userIdFromApi);
+            likePostEntity.setPostId(postId);
+            likePostEntity.setAuthorId(authorId);
             likePostEntity.setLikeStatus(LikeStatus.ACTIVE);
-            log.info("[INFO] Новый лайк создан с id: {}, статус: ACTIVE", likePostEntity.getId());
+
+            LikePostEntity saved = likeRepository.save(likePostEntity);
+            log.info("💾 СОХРАНЁН НОВЫЙ like id: {}", saved.getId());
 
             return likePostEntity.getLikeStatus().toString();
         }
+    }
+
+    @Transactional(readOnly = true)
+    public Long countActiveLikesByPostId(Long postId) {
+        return likeRepository.countActiveLikesByPostId(postId);
     }
 }

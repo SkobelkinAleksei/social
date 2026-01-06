@@ -12,12 +12,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserFilterDto {
-    private String username;
+    private String firstName;
     private String lastName;
     private String numberPhone;
+    private LocalDate timeStamp;
+    private Role role;
     private LocalDate birthdayFrom;
     private LocalDate birthdayTo;
-    private LocalDateTime createdFrom;
-    private LocalDateTime createdTo;
-    private Role role;
 }

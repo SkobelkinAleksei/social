@@ -19,14 +19,14 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
-public class UserEntity implements UserDetails{
+public class UserEntity implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private Long id;
 
-    @Column(name = "user_name", nullable = false, length = 20)
-    private String username;
+    @Column(name = "first_name", nullable = false, length = 20)
+    private String firstName;
 
     @Column(name = "last_name", nullable = false, length = 20)
     private String lastName;
@@ -55,11 +55,16 @@ public class UserEntity implements UserDetails{
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return isEnabled;  // ← ИСПРАВИТЬ: возвращать поле, не super
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
     }
 }

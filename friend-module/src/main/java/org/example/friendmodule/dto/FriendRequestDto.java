@@ -11,6 +11,8 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FriendRequestDto implements Serializable {
+    Long id;
+    Long requesterId;
     Long addresseeId;
     FriendRequestStatus status;
 }

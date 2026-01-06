@@ -1,6 +1,7 @@
 package org.example.likepostmodule.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.common.security.SecurityUtil;
 import org.example.likepostmodule.dto.LikePostDto;
 import org.example.likepostmodule.service.LikePostService;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +22,16 @@ public class LikePostController {
         return ResponseEntity.ok().body(likeService.getLikesByPostId(postId));
     }
 
-    @PostMapping("/{postId}")
-    public ResponseEntity<String> toggleLike(
-        @PathVariable(name = "postId") Long postId,
-        @RequestParam(name = "authorId") Long authorId
-    ) {
-        return ResponseEntity.ok().body(likeService.toggleLike(postId, authorId));
+    @GetMapping("/{postId}/likes-count")
+    public ResponseEntity<Long> getLikesCount(@PathVariable Long postId) {
+        return ResponseEntity.ok(likeService.countActiveLikesByPostId(postId));
     }
 
+    @PostMapping("/{postId}")
+    public ResponseEntity<String> toggleLike(
+        @PathVariable(name = "postId") Long postId
+    ) {
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        return ResponseEntity.ok().body(likeService.toggleLike(postId, currentUserId));
+    }
 }

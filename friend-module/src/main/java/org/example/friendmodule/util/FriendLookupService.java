@@ -4,7 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.common.dto.RequestData;
-import org.example.common.dto.UserDto;
+import org.example.common.dto.user.UserDto;
 import org.example.httpcore.httpCore.SecuredHttpCore;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

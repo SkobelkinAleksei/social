@@ -7,8 +7,10 @@ import org.example.usermodule.dto.UserDto;
 import org.example.usermodule.entity.enums.UserEntity;
 import org.example.usermodule.mapper.UserMapper;
 import org.example.usermodule.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import static io.micrometer.common.util.StringUtils.isNotBlank;
 import static java.util.Objects.isNull;
 
 @Service
@@ -16,6 +18,7 @@ import static java.util.Objects.isNull;
 public class UserUpdateService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     public UserDto updateAccount(UserEntity userEntity, UpdateAccountUserDto updateAccountUser) {
 
@@ -23,23 +26,23 @@ public class UserUpdateService {
             throw new NullPointerException("UpdateAccountUserDto: " + updateAccountUser + "невозможно обновить!");
         }
 
-        if (!isNull(updateAccountUser.getUsername())) {
-            userEntity.setUsername(updateAccountUser.getUsername());
+        if (isNotBlank(updateAccountUser.getFirstName())) {
+            userEntity.setFirstName(updateAccountUser.getFirstName());
         }
 
-        if (!isNull(updateAccountUser.getLastName())) {
+        if (isNotBlank(updateAccountUser.getLastName())) {
             userEntity.setLastName(updateAccountUser.getLastName());
         }
 
-        if (!isNull(updateAccountUser.getEmail())) {
+        if (isNotBlank(updateAccountUser.getEmail())) {
             userEntity.setEmail(updateAccountUser.getEmail());
         }
 
-        if (!isNull(updateAccountUser.getNumberPhone())) {
+        if (isNotBlank(updateAccountUser.getNumberPhone())) {
             userEntity.setNumberPhone(updateAccountUser.getNumberPhone());
         }
 
-        if (!isNull(updateAccountUser.getBirthday())) {
+        if (isNotBlank(String.valueOf(updateAccountUser.getBirthday()))) {
             userEntity.setBirthday(updateAccountUser.getBirthday());
         }
 
@@ -50,11 +53,15 @@ public class UserUpdateService {
             UserEntity userEntity,
             UpdatePasswordUserDto updatePasswordUserDto
     ) {
-        if (!updatePasswordUserDto.getOldPassword().equals(userEntity.getPassword())) {
-            throw new IllegalArgumentException("Неверный старый пароль");
+        if (!passwordEncoder.matches(
+                updatePasswordUserDto.getOldPassword(),
+                userEntity.getPassword()
+        )) {
+            throw new IllegalArgumentException("Неверный старый пароль!");
         }
-
-        userEntity.setPassword(updatePasswordUserDto.getNewPassword());
-        userRepository.save(userEntity);
+        String newPassword = updatePasswordUserDto.getNewPassword();
+        userEntity.setPassword(
+                passwordEncoder.encode(newPassword)
+        );
     }
 }

@@ -30,8 +30,8 @@ public class FriendRequestEntity {
     private FriendRequestStatus status; // PENDING, ACCEPTED, REJECTED
 
     @CreationTimestamp
-    @Column(name = "requested_at")
-    private LocalDateTime requestedAt;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "responded_at")

@@ -1,6 +1,7 @@
 package org.example.commentmodule.repository;
 
 import org.example.commentmodule.entity.CommentEntity;
+import org.example.commentmodule.entity.CommentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -14,7 +15,8 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
         SELECT ce
         FROM CommentEntity ce
         WHERE ce.postId= :postId
-        AND ce.commentStatus= :PUBLISHED
+        AND ce.commentStatus= :commentStatus
+        ORDER BY ce.createdAt ASC
     """)
-    List<CommentEntity> findAllByPostIdAndStatusPublished(Long postId);
+    List<CommentEntity> findAllByPostIdAndStatusPublished(CommentStatus commentStatus, Long postId);
 }

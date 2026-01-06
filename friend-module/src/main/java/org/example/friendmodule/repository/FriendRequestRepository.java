@@ -26,10 +26,21 @@ public interface FriendRequestRepository extends
 
     @Query("""
         select fr from FriendRequestEntity fr
-        where (fr.requesterId = :requesterId and fr.addresseeId = :addresseeId)
+        where fr.requesterId = :requesterId and fr.addresseeId = :addresseeId
     """)
     FriendRequestEntity findByRequesterIdAndAddresseeId(
             @Param("requesterId") Long requesterId,
             @Param("addresseeId") Long addresseeId
+    );
+
+    @Query("""
+    SELECT fr.id
+    FROM FriendRequestEntity fr
+    WHERE (fr.addresseeId = :addresseeId AND fr.requesterId = :requesterId)
+       OR (fr.addresseeId = :requesterId AND fr.requesterId = :addresseeId)
+""")
+    Optional<Long> findRequestIdByAddresseeIdAndRequesterId(
+            @Param("addresseeId") Long addresseeId,
+            @Param("requesterId") Long requesterId
     );
 }

@@ -6,6 +6,7 @@ plugins {
 
 group = 'org.example'
 version = '0.0.1-SNAPSHOT'
+description = 'user-module'
 
 repositories {
     mavenCentral()
@@ -24,6 +25,7 @@ dependencyManagement {
 
 dependencies {
     implementation project(':common')
+    implementation project(':security')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
 

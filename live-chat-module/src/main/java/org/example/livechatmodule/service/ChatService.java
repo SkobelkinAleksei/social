@@ -32,28 +32,29 @@ public class ChatService {
     }
 
     @Transactional
-    public ChatEntity getOrCreatedPrivateChat(
-            Long userIdOne,
-            Long userIdTwo
-    ) {
+    public ChatEntity getOrCreatedPrivateChat(Long userIdOne, Long userIdTwo) {
         return chatRepository.findPrivateChat(userIdOne, userIdTwo)
                 .orElseGet(() -> {
                     ChatEntity chatEntity = new ChatEntity();
                     chatEntity.setChatType(ChatType.PRIVATE);
 
-                    ChatParticipant chatParticipantOne = new ChatParticipant();
-                    chatParticipantOne.setUserId(userIdOne);
-                    chatParticipantOne.setChat(chatEntity);
+                    ChatParticipant participant1 = new ChatParticipant();
+                    participant1.setUserId(userIdOne);
+                    participant1.setChat(chatEntity);
 
-                    ChatParticipant chatParticipantTwo = new ChatParticipant();
-                    chatParticipantTwo.setUserId(userIdTwo);
-                    chatParticipantTwo.setChat(chatEntity);
+                    ChatParticipant participant2 = new ChatParticipant();
+                    participant2.setUserId(userIdTwo);
+                    participant2.setChat(chatEntity);
 
-                    chatEntity.getParticipantSet().addAll(
-                            Set.of(chatParticipantOne, chatParticipantTwo)
-                    );
+                    chatEntity.getParticipantSet().addAll(Set.of(participant1, participant2));
 
-                    return chatEntity;
+                    return chatRepository.save(chatEntity);
                 });
+    }
+
+    @Transactional(readOnly = true)
+    public ChatEntity getChatById(Long chatId) {
+        return chatRepository.findById(chatId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat not found: " + chatId));
     }
 }

@@ -1,0 +1,7 @@
+.edit-post-dialog {
+    --lumo-border-radius: 12px;
+}
+
+.edit-post-dialog .v-text-area {
+    resize: vertical;
+}

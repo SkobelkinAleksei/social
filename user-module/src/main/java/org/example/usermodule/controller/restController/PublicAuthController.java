@@ -2,9 +2,9 @@ package org.example.usermodule.controller.restController;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.usermodule.dto.authDto.LoginResponse;
-import org.example.usermodule.dto.authDto.LoginUserDto;
-import org.example.usermodule.dto.authDto.RegistrationUserDto;
+import org.example.common.dto.auth.LoginResponse;
+import org.example.common.dto.auth.LoginUserDto;
+import org.example.common.dto.auth.RegistrationUserDto;
 import org.example.usermodule.dto.UserDto;
 import org.example.usermodule.service.AuthService;
 import org.springframework.http.ResponseEntity;

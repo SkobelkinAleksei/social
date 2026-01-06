@@ -16,9 +16,9 @@ public interface PostRepository extends JpaRepository<PostEntity, Long>, JpaSpec
     List<PostEntity> findAllByAuthorId(Long authorId);
 
     @Query("""
-            SELECT pe
-            FROM PostEntity pe
-            WHERE pe.statusPost= :statusPost
-    """)
+        SELECT pe
+        FROM PostEntity pe
+        WHERE pe.statusPost = :statusPost
+""")
     Page<PostEntity> findAllByStatusPost(ModerationStatusPost statusPost, Pageable pageable);
 }

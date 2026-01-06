@@ -1,0 +1,28 @@
+.settings-dialog {
+    width: 700px !important;
+    height: 700px !important;
+    max-width: 95vw !important;
+}
+
+.settings-dialog .form-container {
+    height: 500px !important;
+    overflow-y: auto !important;
+    padding: 24px !important;
+    box-sizing: border-box !important;
+}
+
+.settings-dialog .form-row {
+    display: flex !important;
+    gap: 16px !important;
+    margin-bottom: 16px !important;
+}
+
+.settings-dialog .form-row > * {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+.settings-dialog .status-label {
+    min-height: 24px;
+    margin-top: 8px;
+}

@@ -2,9 +2,9 @@ package org.example.likepostmodule.util;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.common.dto.PostDto;
+import org.example.common.dto.post.PostDto;
 import org.example.common.dto.RequestData;
-import org.example.common.dto.UserDto;
+import org.example.common.dto.user.UserDto;
 import org.example.httpcore.httpCore.SecuredHttpCore;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

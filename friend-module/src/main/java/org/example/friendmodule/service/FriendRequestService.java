@@ -2,15 +2,12 @@ package org.example.friendmodule.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.common.security.SecurityUtil;
-import org.example.friendmodule.dto.FriendDto;
 import org.example.friendmodule.dto.FriendRequestDto;
 import org.example.friendmodule.entity.FriendEntity;
 import org.example.friendmodule.entity.FriendRequestEntity;
 import org.example.friendmodule.entity.FriendRequestStatus;
 import org.example.friendmodule.entity.ResponseFriendRequest;
 import org.example.friendmodule.mapper.FriendRequestMapper;
-import org.example.friendmodule.repository.FriendRepository;
 import org.example.friendmodule.repository.FriendRequestRepository;
 import org.example.friendmodule.util.FriendLookupService;
 import org.example.friendmodule.util.FriendRequestSpecification;
@@ -43,13 +40,9 @@ public class FriendRequestService {
         if (requesterId.equals(addresseeId)) {
             throw new IllegalArgumentException("Нельзя добавить себя в друзья");
         }
-
-        Long requesterIdFromApi = friendLookupService.getUserIdFromApi(requesterId);
-        Long addresseeIdFromApi = friendLookupService.getUserIdFromApi(addresseeId);
-
         friendRequestRepository.findBetweenUsers(
-                requesterIdFromApi,
-                addresseeIdFromApi
+                requesterId,
+                addresseeId
         ).ifPresent(existing -> {
             throw new IllegalStateException(
                     "Связь между пользователями уже существует"
@@ -57,8 +50,8 @@ public class FriendRequestService {
         });
 
         FriendRequestEntity friendRequestEntity = new FriendRequestEntity();
-        friendRequestEntity.setRequesterId(requesterIdFromApi);
-        friendRequestEntity.setAddresseeId(addresseeIdFromApi);
+        friendRequestEntity.setRequesterId(requesterId);
+        friendRequestEntity.setAddresseeId(addresseeId);
         friendRequestEntity.setStatus(FriendRequestStatus.PENDING);
         friendRequestEntity.setRespondedAt(LocalDateTime.now());
 
@@ -68,20 +61,11 @@ public class FriendRequestService {
     @Transactional
     public void deleteRequestFriend(Long requesterId, Long addresseeId) {
 
-        Long currentUserId = SecurityUtil.getCurrentUserId();
-
-        Long requesterIdFromApi = friendLookupService.getUserIdFromApi(requesterId);
-        Long addresseeIdFromApi = friendLookupService.getUserIdFromApi(addresseeId);
-
-        if (!requesterIdFromApi.equals(currentUserId)) {
-            throw new AccessDeniedException("Только автор заявки может её удалить!");
-        }
-
         FriendRequestEntity requestEntity = friendRequestRepository
-                .findByRequesterIdAndAddresseeId(requesterIdFromApi, addresseeIdFromApi);
+                .findByRequesterIdAndAddresseeId(requesterId, addresseeId);
 
-        if (isNull(requestEntity)) {
-            throw new EntityNotFoundException("Такого запроса нет!");
+        if (!requestEntity.getRequesterId().equals(requesterId)) {
+            throw new AccessDeniedException("Только автор заявки может её удалить!");
         }
 
         friendRequestRepository.deleteById(requestEntity.getId());
@@ -96,8 +80,12 @@ public class FriendRequestService {
     }
 
     @Transactional(readOnly = true)
-    public List<FriendRequestDto> getRequesterRequestSpecification(FriendRequestStatus status, int page, int size) {
-        Long currentUserId = SecurityUtil.getCurrentUserId();
+    public List<FriendRequestDto> getRequesterRequestSpecification(
+            Long currentUserId,
+            FriendRequestStatus status,
+            int page,
+            int size
+    ) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Specification<FriendRequestEntity> spec = FriendRequestSpecification.requestsByStatus(currentUserId, status);
@@ -110,10 +98,7 @@ public class FriendRequestService {
     }
 
     @Transactional(readOnly = true)
-    public List<FriendRequestDto> getUserRequestsFromFriends(int page, int size) {
-
-        Long currentUserId = SecurityUtil.getCurrentUserId();
-
+    public List<FriendRequestDto> getUserRequestsFromFriends(Long currentUserId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         Specification<FriendRequestEntity> spec = FriendRequestSpecification
@@ -130,19 +115,14 @@ public class FriendRequestService {
 
     @Transactional
     public String responseToRequest(Long requestId, ResponseFriendRequest status, Long userId) {
-
-        Long userIdFromApi = friendLookupService.getUserIdFromApi(userId);
-
         if (isNull(status)) {
             throw new IllegalArgumentException("Новый статус не может быть Null!");
         }
 
-//        Long currentUserId = SecurityUtil.getCurrentUserId();
-
         FriendRequestEntity requestEntity = friendRequestRepository.findById(requestId).orElseThrow(
                 () -> new EntityNotFoundException("Запрос не был найден!"));
 
-        if (!requestEntity.getAddresseeId().equals(userIdFromApi)) {
+        if (!requestEntity.getAddresseeId().equals(userId)) {
             throw new AccessDeniedException("Только владелец может изменять свои входящие заявки");
         }
 

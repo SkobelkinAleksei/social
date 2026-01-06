@@ -3,6 +3,7 @@ package org.example.likepostmodule.dto;
 import lombok.*;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
@@ -11,4 +12,5 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class LikePostDto implements Serializable {
     Long authorId;
+    LocalDateTime createdAt;
 }

@@ -2,6 +2,10 @@ package org.example.livechatmodule.client;
 
 import lombok.RequiredArgsConstructor;
 import org.example.common.dto.*;
+import org.example.common.dto.auth.LoginResponse;
+import org.example.common.dto.auth.LoginUserDto;
+import org.example.common.dto.auth.RegistrationUserDto;
+import org.example.common.dto.user.UserDto;
 import org.example.common.security.JwtHolder;
 import org.example.httpcore.httpCore.IHttpCore;
 import org.springframework.http.HttpHeaders;
@@ -13,8 +17,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AuthClient {
 
-    private final IHttpCore httpCore;   // без токена
-    private final JwtHolder jwtHolder;  // сюда кладём токен после логина
+    private final IHttpCore httpCore;
+    private final JwtHolder jwtHolder;
 
     private static final String BASE_URL = "http://localhost:8080/social/public/v1/auth";
 
@@ -39,7 +43,7 @@ public class AuthClient {
                 httpCore.post(request, headers, LoginResponse.class);
 
         LoginResponse body = response.getBody();
-        jwtHolder.setToken(body.token());   // сохраняем JWT
+        jwtHolder.setToken(body.token());
         return body;
     }
 }

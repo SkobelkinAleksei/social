@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentDto implements Serializable {
+    Long id;
     Long authorId;
     Long postId;
     String content;

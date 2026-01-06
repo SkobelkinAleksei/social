@@ -5,39 +5,39 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.common.security.SecurityUtil;
 import org.example.friendmodule.entity.FriendEntity;
 import org.example.friendmodule.repository.FriendRepository;
+import org.example.friendmodule.repository.FriendRequestRepository;
 import org.example.friendmodule.util.FriendLookupService;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class PrivateFriendService {
     private final FriendRepository friendRepository;
-    private final FriendLookupService friendLookupService;
-    private final FriendRequestService friendRequestService;
+    private final FriendRequestRepository friendRequestRepository;
 
     @Transactional
-    public void deleteFriendById(Long userId1, Long userId2) {
-        if (userId1.equals(userId2)) {
-            throw new IllegalArgumentException("id могут быть равными");
+    public void deleteFriendById(Long currentUserId, Long userId2) {
+
+        Optional<FriendEntity> friendOpt = friendRepository.findEntityByUserId1AndUserId2(currentUserId, userId2);
+        if (friendOpt.isEmpty()) {
+            log.warn("Дружба {}<>{} не найдена", currentUserId, userId2);
+            return;
         }
+        FriendEntity friendEntity = friendOpt.get();
 
-        Long userId1FromApi = friendLookupService.getUserIdFromApi(userId1);
-        Long userId2FromApi = friendLookupService.getUserIdFromApi(userId2);
+        Optional<Long> optionalLong = friendRequestRepository
+                .findRequestIdByAddresseeIdAndRequesterId(currentUserId, userId2);
+        optionalLong.ifPresent(requestId -> {
+            friendRequestRepository.deleteById(requestId);
+            log.info("[INFO] Request {} удалён", requestId);
+        });
 
-        Long currentUserId = SecurityUtil.getCurrentUserId();
-
-        if (currentUserId.equals(userId1FromApi) || currentUserId.equals(userId2FromApi)) {
-            FriendEntity friendEntity = friendRepository
-                    .findEntityByUserId1AndUserId2(userId1FromApi, userId2FromApi);
-
-            friendRepository.deleteById(friendEntity.getId());
-            friendRequestService.deleteRequestById(friendEntity.getId());
-            log.info("[INFO] Дружба была разорвана.");
-        } else {
-            throw new AccessDeniedException("Нет доступа для удаления друга, Вы не являетесь другом!");
-        }
+        friendRepository.deleteById(friendEntity.getId());
+        log.info("[INFO] Дружба была разорвана.");
     }
 }

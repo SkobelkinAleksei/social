@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UserFullDto implements Serializable {
     Long id;
-    String username;
+    String firstName;
     String lastName;
     String email;
     String numberPhone;

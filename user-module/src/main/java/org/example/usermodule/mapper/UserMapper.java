@@ -1,8 +1,8 @@
 package org.example.usermodule.mapper;
 
+import org.example.common.dto.auth.RegistrationUserDto;
 import org.example.usermodule.entity.enums.UserEntity;
 import org.example.usermodule.dto.UserFullDto;
-import org.example.usermodule.dto.authDto.RegistrationUserDto;
 import org.example.usermodule.dto.UserDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

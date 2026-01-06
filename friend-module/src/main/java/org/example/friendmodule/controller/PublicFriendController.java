@@ -2,6 +2,7 @@ package org.example.friendmodule.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.common.security.SecurityUtil;
 import org.example.friendmodule.dto.FriendDto;
 import org.example.friendmodule.service.FriendService;
 import org.springframework.http.ResponseEntity;

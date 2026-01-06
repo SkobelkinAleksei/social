@@ -2,6 +2,7 @@ package org.example.commentmodule.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.commentmodule.dto.CommentDto;
 import org.example.commentmodule.dto.NewCommentDto;
 import org.example.commentmodule.entity.CommentEntity;
@@ -14,6 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static java.util.Objects.isNull;
+
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class PublicCommentService {
@@ -23,11 +27,10 @@ public class PublicCommentService {
 
     @Transactional
     public CommentDto createComment(Long authorId, Long postId, NewCommentDto newCommentDto) {
-        Long userFromApi = commentLookupService.getUserIdFromApi(authorId);
         Long postFromApi = commentLookupService.getPostIdFromApi(postId);
 
         CommentEntity commentEntity = commentMapper.toEntity(newCommentDto);
-        commentEntity.setAuthorId(userFromApi);
+        commentEntity.setAuthorId(authorId);
         commentEntity.setPostId(postFromApi);
         commentEntity.setCommentStatus(CommentStatus.PUBLISHED);
 
@@ -51,8 +54,13 @@ public class PublicCommentService {
 
     @Transactional(readOnly = true)
     public List<CommentDto> getCommentsByPostId(Long postId) {
-        Long postFromApi = commentLookupService.getPostIdFromApi(postId);
-        List<CommentEntity> allByPostId = commentRepository.findAllByPostIdAndStatusPublished(postFromApi);
+
+        if (isNull(postId)) {
+            log.warn("[WARN] postId: %s равен null".formatted(postId));
+            return List.of();
+        }
+
+        List<CommentEntity> allByPostId = commentRepository.findAllByPostIdAndStatusPublished(CommentStatus.PUBLISHED, postId);
 
         return allByPostId.stream()
                 .map(commentMapper::toDto)
@@ -64,9 +72,8 @@ public class PublicCommentService {
         CommentEntity commentEntity = commentRepository.findById(commentId).orElseThrow(
                 () -> new EntityNotFoundException("Комментарий не был найден!")
         );
-        Long userFromApi = commentLookupService.getUserIdFromApi(authorId);
 
-        if (!commentEntity.getAuthorId().equals(userFromApi)) {
+        if (!commentEntity.getAuthorId().equals(authorId)) {
             throw new IllegalArgumentException("Вы не можете удалить чужой комментарий!");
         }
 

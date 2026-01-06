@@ -39,15 +39,15 @@ public class AdminPostService {
     ) {
         log.info("[INFO] Админ запрашивает посты автора id: {} по статусам: {}, страница: {}, размер: {}",
                 authorId, moderationStatus, page, size);
-        Long userFromApi = userPostService.getUserFromApi(authorId);
+        Long userFromApi = userPostService.getUserFromApi();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("publishAt").descending());
         Specification<PostEntity> spec = PostStatusSpecification.filter(moderationStatus)
-                .and(PostStatusSpecification.byAuthor(userFromApi));
+                .and(PostStatusSpecification.byAuthor(authorId));
         Page<PostEntity> postEntities = postRepository.findAll(spec, pageable);
 
         List<PostDto> postDtoList = postEntities.map(postMapper::toDto).toList();
-        log.info("[INFO] Найдено постов автора id: {} с указанными статусами: {}", userFromApi, postDtoList.size());
+        log.info("[INFO] Найдено постов автора id: {} с указанными статусами: {}", authorId, postDtoList.size());
         return postDtoList;
     }
 

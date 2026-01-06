@@ -1,0 +1,150 @@
+/* 🎨 VK Friends - Спокойные цвета как в оригинале */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Карточки - светло-серый фон VK */
+.friend-card-container {
+    position: relative;
+    background: #f6f7f8; /* 👈 VK светло-серый */
+    border: 1px solid #e4e7ec;
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.friend-card-container:hover {
+    background: #ffffff;
+    border-color: #5181b8; /* 👈 VK синий */
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(-2px);
+}
+
+/* Форма поиска - VK градиент */
+.search-form {
+    background: linear-gradient(135deg, #687da2 0%, #5c7bb5 50%, #4a6fa5 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(81,129,184,0.2);
+    padding: 24px;
+    margin-bottom: 24px;
+    color: white;
+}
+
+.search-form h3 {
+    color: white !important;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* Кнопки VK */
+.vk-button {
+    height: 40px !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    border: none !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+}
+
+/* Основная синяя кнопка VK */
+.chat-btn, .profile-btn {
+    background: #5181b8 !important; /* 👈 КЛАССИЧЕСКИЙ VK СИНИЙ */
+    color: white !important;
+}
+
+.chat-btn:hover, .profile-btn:hover {
+    background: #456fa3 !important;
+    box-shadow: 0 4px 12px rgba(81,129,184,0.3) !important;
+}
+
+/* Зеленая - принять */
+.accept-btn {
+    background: #6fc76f !important; /* 👈 VK зеленый */
+    color: white !important;
+}
+
+/* Красная - отклонить */
+.reject-btn {
+    background: #e64646 !important; /* 👈 VK красный */
+    color: white !important;
+}
+
+/* Оранжевая - отменить */
+.cancel-btn {
+    background: #ffa00a !important; /* 👈 VK оранжевый */
+    color: white !important;
+}
+
+/* Крестик */
+.delete-friend-btn {
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+    width: 28px !important;
+    height: 28px !important;
+    background: rgba(230,70,70,0.9) !important;
+    color: white !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    border: none !important;
+    z-index: 20 !important;
+}
+
+.delete-friend-btn:hover {
+    background: #e64646 !important;
+    transform: scale(1.1);
+}
+
+/* Grid */
+.friends-grid, .search-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px !important;
+    width: 100% !important;
+    padding: 16px 0;
+}
+
+/* Аватары */
+.friend-card-container vaadin-avatar {
+    border-radius: 10px !important;
+    border: 2px solid #e1e4e8 !important;
+}
+
+.friend-card-container:hover vaadin-avatar {
+    border-color: #5181b8 !important;
+}
+
+/* Тексты */
+.friend-card-container h3 {
+    color: #2c2f33 !important; /* 👈 VK темно-серый */
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    margin: 8px 0 4px !important;
+}
+
+.friend-card-container p {
+    color: #93999f !important; /* 👈 VK серый текст */
+    font-size: 13px !important;
+}
+
+/* Заголовки */
+.friends-title {
+    color: #2c2f33 !important;
+    font-weight: 700 !important;
+}
+
+/* Адаптив */
+@media (max-width: 768px) {
+    .friends-grid, .search-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .search-form {
+        margin: 8px !important;
+        padding: 20px !important;
+    }
+}

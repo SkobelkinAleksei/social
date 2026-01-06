@@ -1,7 +1,9 @@
 package org.example.postmodule.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.common.security.SecurityUtil;
 import org.example.postmodule.dto.NewPostDto;
 import org.example.postmodule.dto.PostDto;
 import org.example.postmodule.dto.UpdatePostDto;
@@ -21,13 +23,13 @@ public class PostController {
     private final UserPostService postService;
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @GetMapping("/{userId}/{postId}")
+    @GetMapping("/{postId}")
     public ResponseEntity<PostDto> getPostByIdForUser(
-            @PathVariable(name = "userId") Long userId,
             @PathVariable(name = "postId") Long postId
     ) {
-        log.info("[INFO] Пришел запрос от пользователя с id: {} на получение поста с id: {}", userId, postId);
-        return ResponseEntity.ok().body(postService.getPostByIdForUser(userId, postId));
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        log.info("[INFO] Пришел запрос от пользователя с id: {} на получение поста с id: {}", currentUserId, postId);
+        return ResponseEntity.ok().body(postService.getPostByIdForUser(currentUserId, postId));
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
@@ -49,51 +51,51 @@ public class PostController {
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @GetMapping("/{authorId}")
+    @GetMapping("/my-posts")
     public ResponseEntity<List<PostDto>> findUserPostsByStatus(
-            @PathVariable(name = "authorId") Long authorId,
             @RequestParam(required = false) List<ModerationStatusPost> moderationStatus,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-
+        Long currentUserId = SecurityUtil.getCurrentUserId();
         log.info("[INFO] Пришел запрос на поиск постов автора id: {} по статусам: {}, страница: {}, размер: {}",
-                authorId, moderationStatus, page, size);
-        return ResponseEntity.ok().body(postService.findUserPostsByStatus(authorId, moderationStatus, page, size));
+                currentUserId, moderationStatus, page, size);
+        return ResponseEntity.ok().body(postService.findUserPostsByStatus(currentUserId, moderationStatus, page, size));
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @PostMapping("/{userId}")
+    @PostMapping("/submit")
     public ResponseEntity<Long> submitPost(
-            @RequestBody NewPostDto newPostDto,
-            @PathVariable(name = "userId") Long userId
+            @RequestBody NewPostDto newPostDto
     ) {
-        log.info("[INFO] Пришел запрос на создание нового поста от автора с id: {}", userId);
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        log.info("[INFO] Пришел запрос на создание нового поста от автора с id: {}", currentUserId);
         return ResponseEntity.ok().body(
-                postService.submitPost(newPostDto, userId)
+                postService.submitPost(newPostDto, currentUserId)
         );
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @PutMapping("/{userId}/{postId}/update-post")
+    @PutMapping("/{postId}/update-post")
     public ResponseEntity<PostDto> updatePost(
             @PathVariable Long postId,
-            @RequestBody UpdatePostDto updatePostDto,
-            @PathVariable(name = "userId") Long userId
+            @RequestBody UpdatePostDto updatePostDto
     ) {
-        log.info("[INFO] Пришел запрос на обновление поста с id: {} пользователем с id: {}", postId, userId);
-        return ResponseEntity.ok().body(postService.updatePost(postId, updatePostDto, userId));
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        log.info("[INFO] Пришел запрос на обновление поста с id: {} пользователем с id: {}", postId, currentUserId);
+        return ResponseEntity.ok().body(postService.updatePost(postId, updatePostDto, currentUserId));
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @PutMapping("/{userId}/{postId}")
+    @PutMapping("/{postId}")
     public ResponseEntity<String> deletePost(
             @PathVariable(name = "postId") Long postId,
-            @PathVariable(name = "userId") Long userId
+            HttpServletRequest request
     ) {
 //        postService.deletePost(postId, userId);
 //        return ResponseEntity.noContent().build();
-        log.info("[INFO] Пришел запрос удаление поста с id: {} пользователем с id: {}", postId, userId);
-        return ResponseEntity.ok().body(postService.deletePost(postId, userId));
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        log.info("[INFO] Пришел запрос удаление поста с id: {} пользователем с id: {}", postId, currentUserId);
+        return ResponseEntity.ok().body(postService.deletePost(postId, currentUserId));
     }
 }

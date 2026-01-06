@@ -24,6 +24,21 @@ public class  SecuredHttpCore {
         return iHttpCore.post(requestData, headers, responseType);
     }
 
+    public void delete(RequestData requestData) {
+        HttpHeaders headers = buildAuthHeaders();
+        iHttpCore.delete(requestData, headers);
+    }
+
+    public <T> ResponseEntity<T> put(RequestData requestData, Class<T> responseType) {
+        HttpHeaders headers = buildAuthHeaders();
+        return iHttpCore.put(requestData, headers, responseType);
+    }
+
+    public ResponseEntity<Void> putNoContent(RequestData requestData) {
+        HttpHeaders headers = buildAuthHeaders();
+        return iHttpCore.put(requestData, headers, Void.class);
+    }
+
     private HttpHeaders buildAuthHeaders() {
         HttpHeaders headers = new HttpHeaders();
         String token = jwtHolder.getToken();

@@ -2,17 +2,20 @@ package org.example.usermodule.controller.restController;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.security.utils.SecurityUtils;
 import org.example.usermodule.dto.UserDto;
 import org.example.usermodule.dto.UserFullDto;
 import org.example.usermodule.service.AdminService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/social/v1/admin/users")
+@RequestMapping("/api/v1/social/admin/users")
+@PreAuthorize("hasRole('ADMIN')")
 @RestController
 public class AdminController {
     private final AdminService adminService;

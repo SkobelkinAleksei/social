@@ -2,10 +2,10 @@ package org.example.commentmodule.util;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.common.dto.PostDto;
+import org.example.common.dto.post.PostDto;
 import org.example.common.dto.RequestData;
-import org.example.common.dto.UserDto;
-import org.example.common.dto.UserFullDto;
+import org.example.common.dto.user.UserDto;
+import org.example.common.dto.user.UserFullDto;
 import org.example.httpcore.httpCore.SecuredHttpCore;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -72,9 +72,9 @@ public class CommentLookupService {
         return postIdFromApi;
     }
 
-    public PostDto getPostDtoFromApi(Long postId, Long authorId) {
+    public PostDto getPostDtoFromApi(Long postId) {
         RequestData requestData = new RequestData(
-                "http://localhost:8082/api/v1/social/posts/%s/%s".formatted(authorId, postId),
+                "http://localhost:8082/api/v1/social/posts/id/%s".formatted(postId),
                 null
         );
 

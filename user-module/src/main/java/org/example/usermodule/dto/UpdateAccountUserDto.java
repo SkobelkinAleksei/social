@@ -1,5 +1,6 @@
 package org.example.usermodule.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -11,10 +12,11 @@ import java.time.LocalDate;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = false)
 public class UpdateAccountUserDto implements Serializable {
 
     @Size(min = 2, max = 20, message = "Имя должно быть от 2 до 20 символов.")
-    String username;
+    String firstName;
 
     @Size(min = 2, max = 20, message = "Фамилия должна быть от 2 до 20 символов.")
     String lastName;

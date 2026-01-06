@@ -47,17 +47,6 @@ public class PostEntity {
     @Column(name = "user_id")
     private Set<Long> viewSet;
 
-//    @ElementCollection
-//    @CollectionTable(
-//            name = "post_likes",
-//            joinColumns = @JoinColumn(name = "post_id")
-//    )
-//    @Column(name = "user_id")
-//    private Set<Long> likeSet;
-//
-//    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    private Set<CommentEntity> commentTable = new HashSet<>();
-
     @Column(name = "status_post", nullable = false)
     @Enumerated(EnumType.STRING)
     private ModerationStatusPost statusPost;

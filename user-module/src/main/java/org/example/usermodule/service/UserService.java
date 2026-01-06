@@ -3,10 +3,8 @@ package org.example.usermodule.service;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.usermodule.dto.authDto.RegistrationUserDto;
 import org.example.usermodule.entity.enums.UserEntity;
 import org.example.usermodule.dto.*;
-import org.example.usermodule.entity.enums.enums.Role;
 import org.example.usermodule.mapper.UserMapper;
 import org.example.usermodule.repository.UserRepository;
 import org.example.usermodule.utils.UserLookupService;
@@ -19,7 +17,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -31,34 +28,6 @@ public class UserService {
     private final UserMapper userMapper;
     private final UserLookupService userLookupService;
     private final UserUpdateService userUpdateService;
-
-    @Transactional
-    public UserDto createUser(RegistrationUserDto registrationUserDto) {
-        log.info("[INFO] Создание пользователя с email: {} и номером телефона: {}",
-                registrationUserDto.getEmail(), registrationUserDto.getNumberPhone());
-
-        boolean existByEmailOrNumberPhone = userRepository.isExistByEmailOrNumberPhone(
-                registrationUserDto.getEmail(),
-                registrationUserDto.getNumberPhone()
-        );
-
-        if (existByEmailOrNumberPhone) {
-            log.warn("[INFO] Попытка создания пользователя с уже существующими email или телефоном: email={}, phone={}",
-                    registrationUserDto.getEmail(), registrationUserDto.getNumberPhone());
-
-            throw new IllegalArgumentException("Email или телефон уже используются!");
-        }
-
-        UserEntity userEntity = userMapper.toEntity(registrationUserDto);
-        userEntity.setPassword(userEntity.getPassword());
-        userEntity.setRole(Role.USER);
-        userEntity.setTimeStamp(LocalDateTime.now());
-
-        UserDto userDto = userMapper.toDto(userRepository.save(userEntity));
-
-        log.info("[INFO] Пользователь успешно создан с id: {}", userDto.getUserId());
-        return userDto;
-    }
 
 //    @Cacheable(value = "userByEmail", key = "#email")
     @Transactional(readOnly = true)
@@ -100,8 +69,6 @@ public class UserService {
         return userFullDto;
     }
 
-
-    @Transactional(readOnly = true)
     public void updatePassword(
             Long userId,
             UpdatePasswordUserDto updatePasswordUserDto
@@ -111,6 +78,7 @@ public class UserService {
 
         userUpdateService.updatePassword(userEntity, updatePasswordUserDto);
         log.info("[INFO] Пароль пользователя с id: {} успешно обновлён", userId);
+        userRepository.save(userEntity);
     }
 
     @Transactional(readOnly = true)

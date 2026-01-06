@@ -15,14 +15,14 @@ public class UserSpecification {
 
             List<Predicate> predicates = new ArrayList<>();
 
-            if (userFilterDto.getUsername() != null) {
-                predicates.add(cb.like(cb.lower(root.get("username")),
-                        "%" + userFilterDto.getUsername().toLowerCase() + "%"));
+            if (userFilterDto.getFirstName() != null && !userFilterDto.getFirstName().trim().isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("firstName")),
+                        "%" + userFilterDto.getFirstName().toLowerCase().trim() + "%"));
             }
 
-            if (userFilterDto.getLastName() != null) {
+            if (userFilterDto.getLastName() != null && !userFilterDto.getLastName().trim().isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("lastName")),
-                        "%" + userFilterDto.getLastName().toLowerCase() + "%"));
+                        "%" + userFilterDto.getLastName().toLowerCase().trim() + "%"));
             }
 
             if (userFilterDto.getNumberPhone() != null) {
@@ -33,20 +33,14 @@ public class UserSpecification {
                 predicates.add(cb.greaterThanOrEqualTo(
                         root.get("birthday"), userFilterDto.getBirthdayFrom()));
             }
-
             if (userFilterDto.getBirthdayTo() != null) {
                 predicates.add(cb.lessThanOrEqualTo(
                         root.get("birthday"), userFilterDto.getBirthdayTo()));
             }
 
-            if (userFilterDto.getCreatedFrom() != null) {
+            if (userFilterDto.getTimeStamp() != null) {
                 predicates.add(cb.greaterThanOrEqualTo(
-                        root.get("timeStamp"), userFilterDto.getCreatedFrom()));
-            }
-
-            if (userFilterDto.getCreatedTo() != null) {
-                predicates.add(cb.lessThanOrEqualTo(
-                        root.get("timeStamp"), userFilterDto.getCreatedTo()));
+                        root.get("timeStamp"), userFilterDto.getTimeStamp()));
             }
 
             if (userFilterDto.getRole() != null) {

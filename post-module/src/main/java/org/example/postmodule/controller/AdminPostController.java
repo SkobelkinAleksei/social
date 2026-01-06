@@ -7,6 +7,7 @@ import org.example.postmodule.dto.PostFullDto;
 import org.example.postmodule.entity.ModerationStatusPost;
 import org.example.postmodule.service.AdminPostService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.List;
 public class AdminPostController {
     private final AdminPostService adminService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{postId}")
     public ResponseEntity<PostFullDto> getPostById(
             @PathVariable(name = "postId") Long postId
@@ -26,6 +28,7 @@ public class AdminPostController {
         return ResponseEntity.ok().body(adminService.getPostById(postId));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/pending")
     public ResponseEntity<List<PostDto>> getAllPendingPost(
             @RequestParam(defaultValue = "0") int page,
@@ -35,6 +38,7 @@ public class AdminPostController {
         return ResponseEntity.ok().body(adminService.getAllPendingPost(page, size));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{authorId}/allPost")
     public ResponseEntity<List<PostDto>> findUserPostsByStatus(
             @PathVariable(name = "authorId") Long authorId,
@@ -47,6 +51,7 @@ public class AdminPostController {
         return ResponseEntity.ok().body(adminService.findUserPostsByStatus(authorId, moderationStatus, page, size));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{postId}")
     public ResponseEntity<PostDto> updateStatusPost(
             @PathVariable(name = "postId") Long postId,
@@ -56,6 +61,7 @@ public class AdminPostController {
         return ResponseEntity.ok().body(adminService.updateStatusPost(postId, moderationStatus));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{postId}")
     public ResponseEntity<Void> deletePostById(
             @PathVariable(name = "postId") Long postId
