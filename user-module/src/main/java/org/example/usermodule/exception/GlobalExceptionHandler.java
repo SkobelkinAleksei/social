@@ -29,6 +29,18 @@ public class GlobalExceptionHandler {
         );
     }
 
+//    @ExceptionHandler(AccessDeniedException.class)
+//    public ResponseEntity<DefaultErrorMessage> handleAccessDeniedException(
+//            AccessDeniedException ex, HttpServletRequest request) {
+//        log.error("[ERROR] AccessDeniedException", ex);
+//        return getResponseEntity("Access Denied",
+//                "У вас нет доступа к этому ресурсу.",
+//                HttpStatus.FORBIDDEN.value(),
+//                request.getRequestURI(),
+//                null,
+//                "ACCESS_DENIED");
+//    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<DefaultErrorMessage> handleIllegalArgumentException(
             IllegalArgumentException ex, HttpServletRequest request) {
@@ -103,29 +115,14 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(ArithmeticException.class)
-    public ResponseEntity<DefaultErrorMessage> handleArithmeticException(
-            ArithmeticException ex, HttpServletRequest request
-    ) {
-        log.error("[ERROR] ArithmeticException", ex);
-
-        return getResponseEntity(
-                "Arithmetic Error",
-                ex.getMessage(),
-                HttpStatus.BAD_REQUEST.value(),
-                request.getRequestURI(),
-                null,
-                "ARITHMETIC_ERROR"
-        );
-    }
-
     private ResponseEntity<DefaultErrorMessage> getResponseEntity(
             String title,
             String detail,
             int status,
             String instance,
             List<DefaultErrorMessage.FieldError> fieldErrors,
-            String errorCode) {
+            String errorCode
+    ) {
         var defaultErrorMessage = DefaultErrorMessage.builder()
                 .title(title)
                 .detail(detail)

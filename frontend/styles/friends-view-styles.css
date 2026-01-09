@@ -1,0 +1,89 @@
+/* 🎨 VK FRIENDS - ПЕРФЕКТНО */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+* { font-family: 'Inter', sans-serif !important; }
+
+.friend-card-container {
+    position: relative;
+    background: linear-gradient(145deg, #f8f9fa, #f1f3f4);
+    border: 1px solid #e1e5e9;
+    border-radius: 12px;
+    padding: 24px 20px 20px 20px; /* 👈 Место для крестика */
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    overflow: visible;
+}
+
+.friend-card-container:hover {
+    background: #ffffff;
+    border-color: #5181b8;
+    box-shadow: 0 12px 32px rgba(81,129,184,0.15);
+    transform: translateY(-2px);
+}
+
+/* 🔥 КРЕСТИК - ПРОЗРАЧНЫЙ */
+.delete-friend-btn {
+    position: absolute !important;
+    top: 12px !important;
+    right: 12px !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    background: rgba(255,255,255,0.95) !important;  /* 👈 ПРОЗРАЧНЫЙ БЕЛЫЙ */
+    color: #e74c3c !important;  /* Только крестик красный */
+    border: 2px solid rgba(231,76,60,0.3) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+    z-index: 10 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.delete-friend-btn:hover {
+    background: rgba(231,76,60,0.08) !important;  /* 👈 СВЕТЛО-красный */
+    color: #c0392b !important;
+    border-color: rgba(231,76,60,0.5) !important;
+    transform: scale(1.1) !important;
+    box-shadow: 0 4px 12px rgba(231,76,60,0.2) !important;
+}
+
+/* Кнопки VK */
+.vk-button {
+    height: 38px !important;
+    min-width: 110px !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.12) !important;
+    border: none !important;
+    transition: all 0.2s ease !important;
+}
+
+.chat-btn, .profile-btn { background: linear-gradient(135deg, #5181b8, #357abd) !important; }
+.accept-btn { background: linear-gradient(135deg, #4CAF50, #45a049) !important; }
+.reject-btn, .cancel-btn { background: linear-gradient(135deg, #f44336, #d32f2f) !important; }
+
+.search-form {
+    background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 8px 32px rgba(74,144,226,0.25);
+    color: white;
+    margin-bottom: 24px;
+}
+
+.search-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px !important;
+    padding: 20px 0;
+}
+
+/* Адаптив */
+@media (max-width: 768px) {
+    .friend-card-container { padding: 20px 16px 16px 16px !important; }
+    .delete-friend-btn { top: 8px !important; right: 8px !important; width: 28px !important; height: 28px !important; }
+    .search-grid { grid-template-columns: 1fr !important; }
+}

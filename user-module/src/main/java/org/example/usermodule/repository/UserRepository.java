@@ -1,11 +1,11 @@
 package org.example.usermodule.repository;
 
-import org.example.usermodule.entity.UserEntity;
+import org.example.usermodule.entity.enums.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -15,5 +15,15 @@ public interface UserRepository extends
 {
     Optional<UserEntity> findByEmailIgnoreCase(String email);
 
-    Optional<UserEntity> findByNumberPhone(String numberPhone);
+    @Query(
+            """
+                select (count(ue.id) > 0)
+                from UserEntity ue
+                where ue.email= :email
+                or ue.numberPhone= :numberPhone
+            """
+    )
+    boolean isExistByEmailOrNumberPhone(String email, String numberPhone);
+
+    Optional<UserEntity> findByEmail(String email);
 }

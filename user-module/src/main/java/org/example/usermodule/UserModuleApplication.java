@@ -1,16 +1,16 @@
 package org.example.usermodule;
 
-import org.example.usermodule.security.SecurityProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+//import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
-@EnableDiscoveryClient
-@EnableCaching
-@EnableConfigurationProperties(SecurityProperties.class)
-@SpringBootApplication
+//@EnableDiscoveryClient
+@SpringBootApplication(scanBasePackages = {
+        "org.example.security",
+        "org.example.usermodule",
+        "org.example.common"
+}, exclude = {SecurityAutoConfiguration.class})
 public class UserModuleApplication {
 
     public static void main(String[] args) {

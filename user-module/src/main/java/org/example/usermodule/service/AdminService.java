@@ -1,16 +1,13 @@
 package org.example.usermodule.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.usermodule.entity.enums.UserEntity;
 import org.example.usermodule.dto.UserDto;
 import org.example.usermodule.dto.UserFullDto;
-import org.example.usermodule.entity.UserEntity;
 import org.example.usermodule.mapper.UserMapper;
 import org.example.usermodule.repository.UserRepository;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.example.usermodule.utils.UserLookupService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,40 +18,43 @@ import java.util.List;
 @Slf4j
 public class AdminService {
     private final UserRepository userRepository;
+    private final UserLookupService userLookupService;
     private final UserMapper userMapper;
 
     @Transactional(readOnly = true)
     public List<UserDto> getAllUsers() {
-        return userRepository.findAll()
+        log.info("[INFO] Админ запрашивает список всех пользователей");
+        List<UserDto> users = userRepository.findAll()
                 .stream()
                 .map(userMapper::toDto)
                 .toList();
+        log.info("[INFO] Найдено пользователей: {}", users.size());
+        return users;
     }
 
-    @Cacheable(value = "userById", key = "#userId")
+//    @Cacheable(value = "userById", key = "#userId")
     @Transactional(readOnly = true)
     public UserDto getUserById(Long userId) {
-        UserEntity userEntity = userRepository.findById(userId)
-                .orElseThrow(
-                        () -> new EntityNotFoundException("Пользователь с id: " + userId + " не был найден")
-                );
-
+        log.info("[INFO] Админ запрашивает пользователя по id: {}", userId);
+        UserEntity userEntity = userLookupService.getById(userId);
+        log.info("[INFO] Пользователь с id: {} успешно найден", userId);
         return userMapper.toDto(userEntity);
     }
 
-    @CacheEvict(value = "userById", key = "#userId")
+//    @CacheEvict(value = "userById", key = "#userId")
     @Transactional
     public void deleteUserById(Long userId) {
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
-        userRepository.deleteById(user.getId());
+        log.info("[INFO] Админ удаляет пользователя по id: {}", userId);
+        UserEntity userEntity = userLookupService.getById(userId);
+        userRepository.deleteById(userEntity.getId());
+        log.info("[INFO] Пользователь с id: {} успешно удалён", userId);
     }
 
     @Transactional(readOnly = true)
     public UserFullDto getUserProfileById(Long userId) {
-        UserEntity userEntity = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
-
+        log.info("[INFO] Админ запрашивает профиль пользователя по id: {}", userId);
+        UserEntity userEntity = userLookupService.getById(userId);
+        log.info("[INFO] Профиль пользователя с id: {} успешно получен", userId);
         return userMapper.toFullDto(userEntity);
     }
 }

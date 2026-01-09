@@ -1,0 +1,17 @@
+server:
+  port: 5767
+
+spring:
+  application:
+    name: eureka-server
+
+eureka:
+  instance:
+    preferIpAddress: true
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+    serviceUrl:
+      defaultZone: http://localhost:${server.port}/eureka
+  server:
+    waitTimeInMsWhenSyncEmpty: 15000

@@ -2,138 +2,89 @@ package org.example.usermodule.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.example.usermodule.entity.enums.UserEntity;
 import org.example.usermodule.dto.*;
-import org.example.usermodule.entity.UserEntity;
 import org.example.usermodule.mapper.UserMapper;
 import org.example.usermodule.repository.UserRepository;
+import org.example.usermodule.utils.UserLookupService;
 import org.example.usermodule.utils.UserSpecification;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
+import org.example.usermodule.utils.UserUpdateService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 
-import static java.util.Objects.isNull;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final PasswordEncoder passwordEncoder;
+    private final UserLookupService userLookupService;
+    private final UserUpdateService userUpdateService;
 
-    @Cacheable(value = "userByEmail", key = "#email")
+//    @Cacheable(value = "userByEmail", key = "#email")
     @Transactional(readOnly = true)
     public UserDto getUserByEmail(String email) {
-        System.out.println("Запрос в базу!");
+        log.info("[INFO] Поиск пользователя по email: {}", email);
         return userMapper.toDto(
                 userRepository.findByEmailIgnoreCase(email)
-                        .orElseThrow(() -> new EntityNotFoundException("Пользователь не был найден")));
+                        .orElseThrow(() -> {
+                            log.warn("[INFO] Пользователь с email: {} не найден", email);
+                            return new EntityNotFoundException("Пользователь не был найден");
+                        }));
     }
 
-    @CacheEvict(value = {"userByEmail"}, allEntries = true)
+//    @CacheEvict(value = {"userByEmail"}, allEntries = true)
     @Transactional
-    public UserDto updateUserAccount(Long userId, UpdateAccountUserDto updateAccountUser) throws AccessDeniedException {
+    public UserDto updateUserAccount(
+            Long userId,
+            UpdateAccountUserDto updateAccountUser
+    ) {
+        log.info("[INFO] Обновление аккаунта пользователя с id: {}", userId);
+        UserEntity userEntity = userLookupService.getById(userId);
 
-        JwtUserData user = (JwtUserData) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getPrincipal();
-        Long authId = user.id();
+        UserDto userDto = userUpdateService.updateAccount(userEntity, updateAccountUser);
+        log.info("[INFO] Аккаунт пользователя: {} успешно обновлён", userDto);
 
-        if (!authId.equals(userId)) {
-            throw new AccessDeniedException("Вы не можете обновить чужой аккаунт");
-        }
-
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow(
-                () -> new EntityNotFoundException("Пользователь не был найден.")
-        );
-
-
-
-        if (!isNull(updateAccountUser.getUsername())) {
-            userEntity.setUsername(updateAccountUser.getUsername());
-        }
-
-        if (!isNull(updateAccountUser.getLastName())) {
-            userEntity.setLastName(updateAccountUser.getLastName());
-        }
-
-        if (!isNull(updateAccountUser.getEmail())) {
-            userEntity.setEmail(updateAccountUser.getEmail());
-        }
-
-        if (!isNull(updateAccountUser.getNumberPhone())) {
-            userEntity.setNumberPhone(updateAccountUser.getNumberPhone());
-        }
-
-        if (!isNull(updateAccountUser.getBirthday())) {
-            userEntity.setBirthday(updateAccountUser.getBirthday());
-        }
-
-        return userMapper.toDto(
-                userRepository.save(userEntity)
-        );
+        return userDto;
     }
 
     @Transactional(readOnly = true)
-    public UserFullDto getMyProfile(Long userId) throws AccessDeniedException {
+    public UserFullDto getMyProfile(
+            Long userId
+    ) {
+        log.info("[INFO] Получение профиля для пользователя с id: {}", userId);
+        UserEntity userEntity = userLookupService.getById(userId);
 
-        JwtUserData user = (JwtUserData) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getPrincipal();
-        Long authId = user.id();
+        UserFullDto userFullDto = userMapper.toFullDto(userEntity);
+        log.info("[INFO] Профиль пользователя: {} успешно получен", userFullDto);
 
-        if (!authId.equals(userId)) {
-            throw new AccessDeniedException("Нет доступа к профилю!");
-        }
-
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow(
-                () -> new EntityNotFoundException("Пользователь не был найден.")
-        );
-
-        return userMapper.toFullDto(userEntity);
+        return userFullDto;
     }
 
-    @Transactional(readOnly = true)
     public void updatePassword(
             Long userId,
             UpdatePasswordUserDto updatePasswordUserDto
-    ) throws AccessDeniedException {
+    ) {
+        log.info("[INFO] Обновление пароля пользователя с id: {}", userId);
+        UserEntity userEntity = userLookupService.getById(userId);
 
-        JwtUserData user = (JwtUserData) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getPrincipal();
-        Long authId = user.id();
-
-        if (!authId.equals(userId)) {
-            throw new AccessDeniedException("Нет доступа для изменения пароля!");
-        }
-
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow(
-                () -> new EntityNotFoundException("Пользователь не был найден.")
-        );
-
-        if (!passwordEncoder.matches(updatePasswordUserDto.getOldPassword(), userEntity.getPassword())) {
-            throw new IllegalArgumentException("Неверный старый пароль");
-        }
-
-        String newPass = passwordEncoder.encode(updatePasswordUserDto.getNewPassword());
-        userEntity.setPassword(newPass);
+        userUpdateService.updatePassword(userEntity, updatePasswordUserDto);
+        log.info("[INFO] Пароль пользователя с id: {} успешно обновлён", userId);
         userRepository.save(userEntity);
     }
 
     @Transactional(readOnly = true)
     public List<UserDto> searchUsers(UserFilterDto filter, int page, int size) {
-
+        log.info("[INFO] Поиск пользователей с фильтром: {}, страница: {}, размер: {}",
+                filter, page, size);
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
 
         Page<UserEntity> users = userRepository.findAll(
@@ -141,17 +92,21 @@ public class UserService {
                 pageable
         );
 
-        return users.map(userMapper::toDto).toList();
+        List<UserDto> dtoList = users.map(userMapper::toDto).toList();
+        log.info("[INFO] Поиск пользователей завершён. Найдено записей: {}", dtoList.size());
+
+        return dtoList;
     }
 
-    @Cacheable(value = "userById", key = "#userId")
+//    @Cacheable(value = "userById", key = "#userId")
     @Transactional(readOnly = true)
     public UserDto getUserById(Long userId) {
-        UserEntity userEntity = userRepository.findById(userId)
-                .orElseThrow(
-                        () -> new EntityNotFoundException("Пользователь с id: " + userId + " не был найден")
-                );
+        log.info("[INFO] Получение пользователя по id: {}", userId);
+        UserEntity userEntity = userLookupService.getById(userId);
 
-        return userMapper.toDto(userEntity);
+        UserDto userDto = userMapper.toDto(userEntity);
+        log.info("[INFO] Пользователь: {} успешно получен", userDto);
+
+        return userDto;
     }
 }

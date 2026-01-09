@@ -12,11 +12,9 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class UserDto implements Serializable {
     Long userId;
-    String username;
+    String firstName;
     String lastName;
     String numberPhone;
+    String email;
     LocalDate birthday;
-
-//    List<FriendEntity> friendList;
-//    List<PostEntity> postList;
 }
