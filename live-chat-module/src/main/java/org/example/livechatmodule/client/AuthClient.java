@@ -1,7 +1,7 @@
 package org.example.livechatmodule.client;
 
 import lombok.RequiredArgsConstructor;
-import org.example.common.dto.*;
+import org.example.common.dto.RequestData;
 import org.example.common.dto.auth.LoginResponse;
 import org.example.common.dto.auth.LoginUserDto;
 import org.example.common.dto.auth.RegistrationUserDto;

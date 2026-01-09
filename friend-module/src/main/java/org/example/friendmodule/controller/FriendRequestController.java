@@ -42,7 +42,7 @@ public class FriendRequestController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/outgoing")
     public ResponseEntity<List<FriendRequestDto>> getRequesterRequestSpecification(
-            @RequestParam FriendRequestStatus status,
+            @RequestParam(required = false) FriendRequestStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {

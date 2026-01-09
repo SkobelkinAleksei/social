@@ -41,6 +41,7 @@ public class FriendsView extends VerticalLayout implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
+        removeAll();
         try {
             String userIdParam = event.getRouteParameters().get("userId")
                     .orElseThrow(() -> new EntityNotFoundException("userId required"));
@@ -48,12 +49,10 @@ public class FriendsView extends VerticalLayout implements BeforeEnterObserver {
             Long currentUserId = Long.valueOf(userIdParam);
             List<FriendDto> friends = friendClient.getFriends(currentUserId);
 
-            log.info("FriendsView: загружено {} друзей для userId={}", friends.size(), currentUserId);
-
             add(buildFriendsContent(friends, currentUserId));
-
+            log.info("[INFO] FriendsView: загружено {} друзей для userId={}", friends.size(), currentUserId);
         } catch (Exception e) {
-            log.error("FriendsView ошибка: {}", e.getMessage(), e);
+            log.error("[ERROR] FriendsView ошибка: {}", e.getMessage(), e);
             add(new H3("Ошибка загрузки друзей"));
         }
     }
@@ -98,7 +97,6 @@ public class FriendsView extends VerticalLayout implements BeforeEnterObserver {
     }
 
     private Component friendCard(UserDto friendUser, Long currentUserId, Long friendId) {
-        // ✅ Контейнер для позиционирования
         Div cardContainer = new Div();
         cardContainer.addClassName("friend-card-container");
 
@@ -145,7 +143,7 @@ public class FriendsView extends VerticalLayout implements BeforeEnterObserver {
 
         cardContent.add(avatar, name, emailText, buttonLayout);
 
-        // ✅ Крестик
+        // Крестик
         Button deleteBtn = new Button("✕");
         deleteBtn.addClassNames("delete-friend-btn");
         deleteBtn.getElement().executeJs(
@@ -153,7 +151,7 @@ public class FriendsView extends VerticalLayout implements BeforeEnterObserver {
         );
         deleteBtn.addClickListener(e -> deleteFriend(currentUserId, friendId, cardContainer));
 
-        // ✅ Клик по карточке ИГНОРИРУЕТ крестик
+        // Клик по карточке ИГНОРИРУЕТ крестик
         cardContainer.addClickListener(e -> {
             UI.getCurrent().navigate("profile/" + friendId);
         });
@@ -170,10 +168,7 @@ public class FriendsView extends VerticalLayout implements BeforeEnterObserver {
                     friendClient.deleteFriend(currentUserId, friendId)
                             .thenAccept(v -> {
                                 Notification.show("✅ Друг удалён!", 2000, Notification.Position.TOP_CENTER);
-
-                                // ✅ Правильное удаление карточки
                                 card.getElement().removeFromParent();
-                                // или: card.getParent().ifPresent(p -> p.getElement().removeChild(card.getElement()));
                             })
                             .exceptionally(t -> {
                                 Notification.show("❌ " + t.getMessage(), 4000, Notification.Position.MIDDLE);
@@ -181,5 +176,4 @@ public class FriendsView extends VerticalLayout implements BeforeEnterObserver {
                             });
                 }).open();
     }
-
 }

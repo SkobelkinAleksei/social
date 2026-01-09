@@ -89,13 +89,22 @@ public class PostController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PutMapping("/{postId}")
     public ResponseEntity<String> deletePost(
-            @PathVariable(name = "postId") Long postId,
-            HttpServletRequest request
+            @PathVariable(name = "postId") Long postId
     ) {
-//        postService.deletePost(postId, userId);
-//        return ResponseEntity.noContent().build();
         Long currentUserId = SecurityUtil.getCurrentUserId();
         log.info("[INFO] Пришел запрос удаление поста с id: {} пользователем с id: {}", postId, currentUserId);
         return ResponseEntity.ok().body(postService.deletePost(postId, currentUserId));
+    }
+
+    @GetMapping("/{postId}/views-count")
+    public ResponseEntity<Long> getViewsCount(@PathVariable Long postId) {
+        log.info("[INFO] Views count для поста: {}", postId);
+        return ResponseEntity.ok(postService.getViewsCount(postId));
+    }
+
+    @GetMapping("/{postId}/viewers")
+    public ResponseEntity<List<Long>> getPostViews(@PathVariable Long postId) {
+        log.info("[INFO] Viewers для поста: {}", postId);
+        return ResponseEntity.ok(postService.getPostViews(postId));
     }
 }

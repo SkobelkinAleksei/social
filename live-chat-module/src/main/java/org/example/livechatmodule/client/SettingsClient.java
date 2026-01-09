@@ -22,18 +22,18 @@ public class SettingsClient {
             ResponseEntity<UserDto> response = httpCore.put(request, UserDto.class);
             return response.getBody();
         } catch (Exception e) {
-            log.error("Ошибка обновления аккаунта: {}", e.getMessage());
+            log.error("[ERROR] Ошибка обновления аккаунта: {}", e.getMessage());
             return null;
         }
     }
 
     public void updatePassword(UpdatePasswordUserDto dto) {
         if (dto == null) {
-            log.error("DTO для смены пароля null");
+            log.error("[ERROR] DTO для смены пароля null");
             throw new IllegalArgumentException("DTO не может быть null");
         }
 
-        log.debug("updatePassword: old={}, new={}",
+        log.debug("[DEBUG] updatePassword: old={}, new={}",
                 dto.getOldPassword() != null ? "OK" : "null",
                 dto.getNewPassword() != null ? "OK" : "null");
 
@@ -41,13 +41,13 @@ public class SettingsClient {
         try {
             ResponseEntity<Void> response = httpCore.putNoContent(request);
             if (response.getStatusCode().is2xxSuccessful()) {
-                log.info("✅ Пароль обновлён (статус: {})", response.getStatusCode());
+                log.info("[INFO] Пароль обновлён (статус: {})", response.getStatusCode());
             } else {
-                log.error("❌ Ошибка сервера: {}", response.getStatusCode());
+                log.error("[ERROR] Ошибка сервера: {}", response.getStatusCode());
                 throw new RuntimeException("Сервер: " + response.getStatusCode());
             }
         } catch (Exception e) {
-            log.error("❌ Ошибка смены пароля: {}", e.getMessage(), e);
+            log.error("[ERROR] Ошибка смены пароля: {}", e.getMessage(), e);
             throw new RuntimeException("Ошибка: " + e.getMessage(), e);
         }
     }

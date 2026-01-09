@@ -22,6 +22,15 @@ public class LikePostController {
         return ResponseEntity.ok().body(likeService.getLikesByPostId(postId));
     }
 
+    @GetMapping("/{postId}/is-liked")
+    public ResponseEntity<Boolean> isLikedByUser(
+            @PathVariable Long postId,
+            @RequestParam Long userId
+    ) {
+        boolean isLiked = likeService.isLikedByUser(postId, userId);
+        return ResponseEntity.ok(isLiked);
+    }
+
     @GetMapping("/{postId}/likes-count")
     public ResponseEntity<Long> getLikesCount(@PathVariable Long postId) {
         return ResponseEntity.ok(likeService.countActiveLikesByPostId(postId));

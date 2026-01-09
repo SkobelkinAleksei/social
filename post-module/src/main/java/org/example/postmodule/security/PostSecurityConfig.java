@@ -14,7 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @Configuration
 public class PostSecurityConfig {
-    private final PostJwtAuthFilter postJwtAuthFilter;  // ← ТВОЙ фильтр!
+    private final PostJwtAuthFilter postJwtAuthFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -23,13 +23,12 @@ public class PostSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
                     auth
-                            // Для post-module ТОЛЬКО твои эндпоинты
                             .requestMatchers("/api/v1/social/posts/**").hasAnyRole("USER", "ADMIN")
                             .requestMatchers("/api/v1/social/admin/**").hasAnyRole("ADMIN")
-                            .requestMatchers("/api/v1/social/users/post/**").permitAll()  // ← Уже есть
-                            .anyRequest().permitAll();  // ← УПРОЩЕННО!
+                            .requestMatchers("/api/v1/social/users/post/**").permitAll()
+                            .anyRequest().permitAll();
                 })
-                .addFilterAfter(postJwtAuthFilter, UsernamePasswordAuthenticationFilter.class)  // ← ТВОЙ фильтр!
+                .addFilterAfter(postJwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 }

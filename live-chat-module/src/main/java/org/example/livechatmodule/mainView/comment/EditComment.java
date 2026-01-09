@@ -73,20 +73,19 @@ public class EditComment extends Dialog {
             return;
         }
 
-        log.info("💾 Сохраняем комментарий {}", commentId);
+        log.info("[INFO] Сохраняем комментарий {}", commentId);
         try {
             NewCommentDto updateDto = new NewCommentDto();
             updateDto.setContent(content);
 
-            CommentClient commentClient = this.commentClient; // Для PUT private API
-            CommentDto updated = commentClient.updateComment(commentId, updateDto); // Новый метод
+            CommentClient commentClient = this.commentClient;
+            CommentDto updated = commentClient.updateComment(commentId, updateDto);
 
-            log.info("✅ Комментарий обновлен: {}", updated.getId());
-            onSuccess.run(); // reloadComments()
+            log.info("[INFO] Комментарий обновлен: {}", updated.getId());
+            onSuccess.run();
             close();
-            // Notification.show("✅ Комментарий обновлен!", 2000, Notification.Position.TOP_CENTER);
         } catch (Exception e) {
-            log.error("❌ Ошибка обновления: {}", e.getMessage(), e);
+            log.error("[ERROR] Ошибка обновления: {}", e.getMessage(), e);
             textArea.setInvalid(true);
             textArea.setErrorMessage("❌ Ошибка сохранения");
         }

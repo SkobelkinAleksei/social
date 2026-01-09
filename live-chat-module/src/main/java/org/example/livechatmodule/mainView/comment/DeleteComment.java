@@ -68,11 +68,11 @@ public class DeleteComment extends Dialog {
     }
 
     private void confirmDelete() {
-        log.info("✅ ПОДТВЕРЖДЕНИЕ удаления commentId={}", commentId);
+        log.info("[INFO] ПОДТВЕРЖДЕНИЕ удаления commentId={}", commentId);
 
         try {
             commentClient.deleteComment(commentId);
-            log.info("✅ API delete успешен для commentId={}", commentId);
+            log.info("[INFO] API delete успешен для commentId={}", commentId);
 
             Notification.show("✅ Комментарий удалён!", 2000, Notification.Position.TOP_CENTER);
             close();

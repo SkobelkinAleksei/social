@@ -78,6 +78,9 @@ public class ProfileSideMenu extends VerticalLayout {
         Button settingsBtn = new Button("⚙️ Изменить свои данные", e -> {
             new SettingsDialog(settingsClient, userClient, userId).open();
         });
+        Button friendsPostsBtn = new Button("📱 Посты друзей",
+                e -> UI.getCurrent().navigate("friends-posts/" + userId));
+        friendsPostsBtn.setWidthFull();
 
         List<Button> commonButtons = List.of(backBtn, profileBtn, newPostBtn, settingsBtn);
         commonButtons.forEach(b -> {
@@ -86,9 +89,7 @@ public class ProfileSideMenu extends VerticalLayout {
         });
 
         add(title, backBtn, profileBtn,
-                friendsToggleBtn, friendsSubMenu, searchPeopleBtn,
+                friendsToggleBtn, friendsSubMenu, searchPeopleBtn, friendsPostsBtn,
                 newPostBtn, settingsBtn);
     }
 }
-
-

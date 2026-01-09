@@ -21,12 +21,12 @@ public class LikeListDialog extends Dialog {
     private Grid<LikeRow> grid;  // ✅ Делаем поле
 
     public LikeListDialog(List<LikePostDto> likes, UserClient userClient) {
-        log.info("🔍 LikeListDialog: {} лайков", likes.size());
+        log.info("[INFO] Конструктор LikeListDialog: {} лайков", likes.size());
 
         H3 title = new H3(likes.size() + " лайкнули");
         title.getStyle().set("margin", "0 0 20px 0");
 
-        grid = new Grid<>(LikeRow.class, false);  // ✅ Сохраняем ссылку
+        grid = new Grid<>(LikeRow.class, false);
         grid.addClassName("like-grid");
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
@@ -64,7 +64,7 @@ public class LikeListDialog extends Dialog {
                                                 (user.getLastName() != null ? user.getLastName() : "") : "Unknown";
                                         return new LikeRow(name, CustomDateTimeFormatter.formatCommentDate(like.getCreatedAt()));
                                     } catch (Exception e) {
-                                        log.warn("Ошибка загрузки пользователя {}: {}", like.getAuthorId(), e.getMessage());
+                                        log.warn("[WARN] Ошибка загрузки пользователя {}: {}", like.getAuthorId(), e.getMessage());
                                         return new LikeRow("Unknown", CustomDateTimeFormatter.formatCommentDate(like.getCreatedAt()));
                                     }
                                 })
@@ -74,7 +74,7 @@ public class LikeListDialog extends Dialog {
                     getUI().ifPresent(ui ->
                             ui.access(() -> {
                                 grid.setItems(rows);
-                                log.info("✅ Grid заполнен: {} строк", rows.size());
+                                log.info("[INFO] Grid заполнен: {} строк", rows.size());
                             })
                     );
                 });

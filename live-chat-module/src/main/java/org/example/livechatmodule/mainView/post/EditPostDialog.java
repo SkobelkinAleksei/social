@@ -62,19 +62,15 @@ public class EditPostDialog extends Dialog {
 
         Notification.show("✅ Пост отправлен на модерацию...", 1500, Notification.Position.TOP_CENTER);
 
-        // ✅ АСИНХРОННО отправляем запрос (не ждём!)
         postClient.updatePost(postId, dto)
                 .thenRun(() -> {
-                    log.info("✅ UpdatePost завершён в фоне");
+                    log.info("[INFO] UpdatePost завершён в фоне");
                 })
                 .exceptionally(t -> {
-                    log.error("❌ UpdatePost ошибка (игнорируем): {}", t.getMessage());
+                    log.error("[ERROR] UpdatePost ошибка (игнорируем): {}", t.getMessage());
                     return null;
                 });
 
-        // ✅ МГНОВЕННЫЙ редирект
         UI.getCurrent().getPage().executeJs("setTimeout(() => { window.location.href = '/profile'; }, 500);");
     }
-
-
 }

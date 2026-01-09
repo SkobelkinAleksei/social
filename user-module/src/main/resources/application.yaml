@@ -23,8 +23,6 @@ spring:
 security:
     jwt:
         refresh-secret: "KRLeMz77TA1D+uEo4iJbYJcaGgUy6IDzrPw440tAkJU+7cfLjtau8JHnoIAIRvUwRrOMtWq96HX2NYa0YUYKGQ=="
-        expiration: 360000
-
 #eureka:
 #    instance:
 #        preferIpAddress: true

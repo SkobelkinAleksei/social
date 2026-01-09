@@ -1,5 +1,6 @@
 package org.example.livechatmodule.mainView.post;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
@@ -23,8 +24,10 @@ import org.example.livechatmodule.client.UserClient;
 import org.example.livechatmodule.mainView.comment.DeleteComment;
 import org.example.livechatmodule.mainView.comment.EditComment;
 import org.example.livechatmodule.mainView.like.LikeListDialog;
+import org.example.livechatmodule.mainView.like.ViewListDialog;
 import org.example.livechatmodule.utils.CustomDateTimeFormatter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @CssImport("./styles/post-modal.css")
@@ -41,10 +44,15 @@ public class ProfilePostCard extends VerticalLayout {
     private Button sendCommentBtn;
     private HorizontalLayout commentForm;
     private Paragraph content;
-    private final LikeClient likeClient;  // ✅ ДОБАВЬ
+    private final LikeClient likeClient;
     private Button likeBtn;
     private Span likeCount;
-    private boolean isLiked = false;  // Статус лайка
+    private Span viewCount;
+    private Button viewsBtn;
+    private boolean isLiked = false;
+    private LocalDateTime lastViewTime = LocalDateTime.now().minusSeconds(10);
+
+
 
     public ProfilePostCard(PostDto post, PostClient postClient, LikeClient likeClient, CommentClient commentClient,
                            UserClient userClient, Long currentUserId) {
@@ -55,7 +63,6 @@ public class ProfilePostCard extends VerticalLayout {
         this.currentUserId = currentUserId;
         this.likeClient = likeClient;
         init();
-        loadLikeStatus();
     }
 
     private void init() {
@@ -64,17 +71,15 @@ public class ProfilePostCard extends VerticalLayout {
         setMaxWidth("520px");
         addClassNames("profile-post-card", "post-card-relative");
 
-        // ✅ Контейнер контента
         VerticalLayout contentContainer = new VerticalLayout();
         contentContainer.setPadding(false);
         contentContainer.setSpacing(true);
         contentContainer.setWidthFull();
         contentContainer.addClassName("post-content-container");
 
-
+        HorizontalLayout postHeader = createPostHeader();
         HorizontalLayout likeLayout = createLikeLayout();
 
-        // Дата
         String formatCommentDate = CustomDateTimeFormatter.formatCommentDate(post.getCreatedAt());
         Paragraph date = new Paragraph(formatCommentDate);
         date.addClassName("profile-date");
@@ -85,6 +90,7 @@ public class ProfilePostCard extends VerticalLayout {
         Button commentsBtn = new Button("💬 Комментарии");
         commentsBtn.addClassName("profile-comments-btn");
 
+        // Создаем форму СНИЗУ
         createCommentForm();
         commentsContainer = new Div();
         commentsContainer.setVisible(false);
@@ -92,106 +98,154 @@ public class ProfilePostCard extends VerticalLayout {
 
         commentsBtn.addClickListener(e -> toggleComments(commentsBtn));
 
-        // ✅ Добавляем в контейнер
-        contentContainer.add(date, content, likeLayout, commentsBtn, commentsContainer, commentForm);
+        // Контент поста
+        contentContainer.add(postHeader, date, content, likeLayout, commentsBtn, commentsContainer);
 
-        // ✅ Шестерёнка поверх (если владелец)
+        getElement().addEventListener("mouseenter", e -> registerView());
+        getElement().addEventListener("click", e -> registerView());
+        // Edit кнопка (если владелец)
         if (isPostOwner()) {
             Button editBtn = createPostEditButton();
-            add(editBtn, contentContainer);  // ✅ Шестерёнка ПЕРВАЯ
+            add(contentContainer, commentForm, editBtn);
         } else {
-            add(contentContainer);
+            add(contentContainer, commentForm);
         }
+
+        UI.getCurrent().access(this::loadLikesSync);
+    }
+
+    private HorizontalLayout createPostHeader() {
+        UserDto author = userClient.getUserById(post.getAuthorId());
+        String authorName = author != null
+                ? author.getFirstName() + (author.getLastName() != null ? " " + author.getLastName() : "")
+                : "Пользователь #" + post.getAuthorId();
+
+        Span authorSpan = new Span(authorName);
+        authorSpan.addClassName("post-author-name");
+        authorSpan.getElement().setProperty("title", "Перейти к профилю");
+        authorSpan.addClickListener(e -> UI.getCurrent().navigate("profile/" + post.getAuthorId()));
+        authorSpan.getStyle().set("cursor", "pointer").set("color", "#1976d2")
+                .set("text-decoration", "underline").set("font-weight", "500");
+
+        HorizontalLayout header = new HorizontalLayout(authorSpan);
+        header.setWidthFull();
+        header.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
+        header.addClassName("post-header");
+        return header;
     }
 
     private HorizontalLayout createLikeLayout() {
-        // ✅ КНОПКА ЛАЙКА + СЧЁТЧИК
-        likeCount = new Span("0");
+        likeCount = new Span("⏳");
         likeCount.addClassName("like-count");
+        likeCount.getStyle().set("cursor", "pointer").set("color", "#1976d2")
+                .set("text-decoration", "underline");
+        likeCount.addClickListener(e -> showLikes());
 
-        likeBtn = new Button();
+        likeBtn = new Button("🤍");
         likeBtn.addClassNames("like-btn");
         likeBtn.addClickListener(e -> toggleLike());
 
-        // ✅ КНОПКА ПРОСМОТРА ЛАЙКОВ ПОСТА
-        Button showLikesBtn = new Button("👁");
-        showLikesBtn.addClassName("show-likes-btn");
-        showLikesBtn.addClickListener(e -> showLikes());
+        viewsBtn = new Button("👁");
+        viewsBtn.addClassName("views-btn");
+        viewsBtn.addClickListener(e -> showViews());
+        viewCount = new Span("0");
+        viewCount.addClassName("view-count");
+        viewCount.getStyle().set("color", "#888").set("font-size", "14px").set("marginLeft", "4px");
 
-        // ✅ Загружаем статус и счётчик
-        loadLikeStatus();
-
-        HorizontalLayout layout = new HorizontalLayout(likeBtn, likeCount, showLikesBtn);
+        HorizontalLayout layout = new HorizontalLayout(likeBtn, likeCount, viewsBtn, viewCount);
         layout.setSpacing(true);
         layout.setAlignItems(FlexComponent.Alignment.CENTER);
         layout.setWidthFull();
-
         return layout;
     }
 
-    private void loadLikeStatus() {
-        // 1. Статус лайка (liked/me)
-        likeClient.getLikes(post.getPostId())
-                .thenAccept(likes -> {
-                    isLiked = likes.stream().anyMatch(like -> like.getAuthorId().equals(currentUserId));
-                    updateLikeButton();
-                });
+    @SuppressWarnings("unused")
+    public void registerView() {
+        LocalDateTime now = LocalDateTime.now();
+        if (now.minusSeconds(3).isAfter(lastViewTime)) {
+            lastViewTime = now;
+            log.info("👁 View: {}", post.getPostId());
+            postClient.getPostByIdForUser(post.getPostId(), null)
+                    .thenRun(this::updateViewCount);
+        }
+    }
 
-        // 2. Счётчик лайков (отдельно)
-        likeClient.getLikesCount(post.getPostId())
-                .thenAccept(count -> likeCount.setText(String.valueOf(count)));
+    private void updateViewCount() {
+        postClient.getViewsCount(post.getPostId()).thenAccept(count ->
+                getUI().ifPresent(ui -> ui.access(() -> {
+                    viewCount.setText(count != null ? count.toString() : "0");
+                    log.info("📊 Обновлено: {} просмотров", count);
+                })));
+    }
+
+    private void showViews() {
+        // Дополнительный просмотр при клике на глазик
+        postClient.getPostByIdForUser(post.getPostId(), null);
+
+        postClient.getPostViews(post.getPostId())
+                .thenAccept(views -> getUI().ifPresent(ui -> ui.access(() -> {
+                    if (views.isEmpty()) {
+                        Notification.show("👁 Нет просмотров");
+                        return;
+                    }
+                    new ViewListDialog(views, userClient).open();
+                })));
+    }
+
+    private void loadLikesSync() {
+        log.info("[INFO] Синхронная загрузка лайков поста {}", post.getPostId());
+
+        Long count = likeClient.getLikesCount(post.getPostId()).join();
+        likeCount.setText(count != null ? count.toString() : "0");
+        log.info("[INFO] Синхронно: количество = {}", count);
+
+        // ✅ Загружаем просмотры
+        postClient.getViewsCount(post.getPostId()).thenAccept(c -> {
+            getUI().ifPresent(ui -> ui.access(() -> viewCount.setText(c != null ? c.toString() : "0")));
+            log.info("[INFO] Просмотров: {}", c);
+        });
+
+        Boolean liked = likeClient.isLiked(post.getPostId(), currentUserId).join();
+        isLiked = liked != null ? liked : false;
+        updateLikeButtonLocal();
+        log.info("[INFO] Синхронно: liked = {}", isLiked);
     }
 
     private void toggleLike() {
-        likeClient.toggleLike(post.getPostId())
-                .thenAccept(status -> {
-                    isLiked = !isLiked;
-                    updateLikeButton();
-
-                    // Обновляем счётчик
-                    likeClient.getLikesCount(post.getPostId())
-                            .thenAccept(count -> {
-                                likeCount.setText(String.valueOf(count));
-                                Notification.show(isLiked ? "❤️ Лайк поставлен!" : "💔 Лайк убран",
-                                        800, Notification.Position.TOP_CENTER);
-                            });
-                });
+        registerView();
+        likeClient.toggleLike(post.getPostId()).join();
+        loadLikesSync();
     }
 
-    private void updateLikeButton() {
+    private void updateLikeButtonLocal() {
         if (isLiked) {
-            likeBtn.setText("❤️");  // Красное заполненное
+            likeBtn.setText("❤️");
             likeBtn.addClassName("liked");
         } else {
-            likeBtn.setText("🤍");  // Белое пустое
+            likeBtn.setText("🤍");
             likeBtn.removeClassName("liked");
         }
     }
 
     private void showLikes() {
-        log.info("👁 Клик по просмотру лайков поста {}", post.getPostId());
+        registerView();
         likeClient.getLikes(post.getPostId())
-                .thenAccept(likes -> {
-                    log.info("✅ Получено {} лайков для показа", likes.size());
+                .thenAccept(likes -> getUI().ifPresent(ui -> ui.access(() -> {
                     if (likes.isEmpty()) {
                         Notification.show("Лайков нет", 2000, Notification.Position.TOP_CENTER);
                         return;
                     }
-
-                    // 🔥 КРИТИЧЕСКИ ВАЖНО!
-                    getUI().ifPresent(ui -> {
-                        ui.access(() -> {
-                            LikeListDialog dialog = new LikeListDialog(likes, userClient);
-                            dialog.open();
-                            log.info("✅ Диалог открыт в UI-потоке!");
-                        });
-                    });
-                });
+                    new LikeListDialog(likes, userClient).open();
+                })));
     }
 
     private boolean isPostOwner() {
-        UserFullDto currentUser = userClient.getMyProfile();
-        return currentUser != null && currentUser.getId().equals(post.getAuthorId());
+        try {
+            UserFullDto currentUser = userClient.getMyProfile();
+            return currentUser != null && currentUser.getId().equals(post.getAuthorId());
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private Button createPostEditButton() {
@@ -202,201 +256,136 @@ public class ProfilePostCard extends VerticalLayout {
     }
 
     private void openEditPostDialog() {
-        EditPostDialog dialog = new EditPostDialog(
-                postClient,
-                post.getPostId(),
-                post.getContent(),
-                updatedContent -> {
-                    // ✅ Обновляем контент ЛОКАЛЬНО (лучше!)
-                    post.setContent(updatedContent);
-                    content.removeAll();  // Очищаем текущий Paragraph
-                    content.add(new Paragraph(updatedContent));  // Добавляем новый
-                }
-        );
-        dialog.open();
+        new EditPostDialog(postClient, post.getPostId(), post.getContent(), updatedContent -> {
+            post.setContent(updatedContent);
+            content.removeAll();
+            content.add(new Paragraph(updatedContent));
+        }).open();
     }
 
     private void createCommentForm() {
-        commentInput = new TextArea();
-        commentInput.setPlaceholder("Напишите комментарий...");
+        commentInput = new TextArea("Напишите комментарий...");
         commentInput.setMaxHeight("80px");
         commentInput.addClassName("profile-comment-input");
-        commentInput.setVisible(false);
 
+        // АКТИВИРУЕМ кнопку при вводе текста
         commentInput.addValueChangeListener(e -> {
-            sendCommentBtn.setEnabled(!e.getValue().trim().isEmpty());
+            boolean hasText = !e.getValue().trim().isEmpty();
+            sendCommentBtn.setEnabled(hasText);
+            log.info("⌨️ Текст: '{}', enabled: {}", e.getValue().trim(), hasText);
         });
 
         sendCommentBtn = new Button("📤 Отправить");
         sendCommentBtn.addClassName("profile-send-comment-btn");
-        sendCommentBtn.setVisible(false);
-        sendCommentBtn.setEnabled(false);
+        sendCommentBtn.setEnabled(false); // Изначально отключена
         sendCommentBtn.addClickListener(e -> sendComment());
 
         commentForm = new HorizontalLayout(commentInput, sendCommentBtn);
         commentForm.setWidthFull();
         commentForm.setSpacing(true);
-        commentForm.setVisible(false);
         commentForm.addClassName("profile-comment-form");
     }
 
     private void toggleComments(Button commentsBtn) {
-        boolean isVisible = commentsContainer.isVisible();
-        commentsContainer.setVisible(!isVisible);
-        commentForm.setVisible(!isVisible);
+        registerView();
+        boolean visible = commentsContainer.isVisible();
+        commentsContainer.setVisible(!visible);
 
-        if (!isVisible) {
+        commentsBtn.setText(visible ? "💬 Комментарии" : "▲ Закрыть комментарии");
+
+        if (!visible) {
             loadComments(commentsContainer);
-            commentsBtn.setText("▲ Закрыть комментарии");
-            commentInput.setVisible(true);
-            sendCommentBtn.setVisible(true);
             commentInput.focus();
-        } else {
-            commentsBtn.setText("💬 Комментарии");
         }
     }
 
     private void sendComment() {
-        String content = commentInput.getValue().trim();
-        if (content.isEmpty()) {
-            Notification.show("⚠️ Введите текст комментария", 2000, Notification.Position.TOP_CENTER);
-            return;
-        }
+        registerView();
+        String text = commentInput.getValue().trim();
+        if (text.isEmpty()) return;
 
-        log.info("📤 Отправляем комментарий для поста {}", post.getPostId());
+        commentClient.createComment(post.getPostId(), new NewCommentDto(text));
+        commentInput.clear();
 
-        try {
-            NewCommentDto newComment = new NewCommentDto();
-            newComment.setContent(content);
+        commentsContainer.setVisible(true);
+        reloadComments();
 
-            CommentDto createdComment = commentClient.createComment(post.getPostId(), newComment);
-            log.info("✅ Комментарий создан: {}", createdComment.getId());
-
-            commentInput.clear();
-            reloadComments();
-            Notification.show("✅ Комментарий добавлен!", 2000, Notification.Position.TOP_CENTER);
-        } catch (Exception e) {
-            log.error("❌ Ошибка создания комментария: {}", e.getMessage(), e);
-            Notification.show("❌ Ошибка отправки", 3000, Notification.Position.TOP_CENTER);
-        }
+        Notification.show("✅ Готово!");
     }
 
     private void reloadComments() {
-        if (commentsContainer != null) {
+        if (commentsContainer != null && commentsContainer.isVisible()) {
             loadComments(commentsContainer);
         }
     }
 
     private void loadComments(Div container) {
         container.removeAll();
-        log.info("🔄 Загружаем комментарии для поста {}", post.getPostId());
+        log.info("[INFO] Загружаем комментарии для поста {}", post.getPostId());
 
         try {
             List<CommentDto> comments = commentClient.getCommentsByPostId(post.getPostId());
-            log.info("✅ Загружено {} комментариев", comments != null ? comments.size() : 0);
+            log.info("[INFO] Загружено {} комментариев", comments != null ? comments.size() : 0);
 
             if (comments == null || comments.isEmpty()) {
                 container.add(new Paragraph("💭 Комментариев пока нет"));
                 return;
             }
 
-            // 👉 УБИРАЕМ userClient.getMyProfile() — используем переданный currentUserId!
-            log.info("👤 Текущий пользователь ID: {}", currentUserId);
-
-            comments.forEach(comment ->
-                    createCommentLayout(container, comment, currentUserId)
-            );
-
+            comments.forEach(comment -> createCommentLayout(container, comment, currentUserId));
         } catch (Exception e) {
-            log.error("❌ Ошибка загрузки: {}", e.getMessage(), e);
+            log.error("[ERROR] Ошибка загрузки комментариев: {}", e.getMessage());
             container.add(new Paragraph("❌ Ошибка загрузки комментариев"));
         }
     }
 
     private void createCommentLayout(Div container, CommentDto comment, Long currentUserId) {
-        log.info("📝 Комментарий: authorId={}, id={}, content={}",
-                comment.getAuthorId(), comment.getId(), comment.getContent());
-
-        VerticalLayout commentLayout = new VerticalLayout();
-        commentLayout.setPadding(false);
-        commentLayout.setSpacing(false);
-        commentLayout.setWidth("100%");
-        commentLayout.addClassName("profile-comment-layout");
+        VerticalLayout layout = new VerticalLayout();
+        layout.addClassName("profile-comment-layout");
 
         UserDto author = userClient.getUserById(comment.getAuthorId());
-        String authorName = author != null ?
-                author.getFirstName() + (author.getLastName() != null ? " " + author.getLastName() : "") :
-                "Пользователь";
+        String authorName = author != null ? author.getFirstName() + " " + author.getLastName() : "Пользователь";
 
         Span authorSpan = new Span(authorName);
         authorSpan.addClassName("profile-author-text");
 
-        String formattedCreatedAt = CustomDateTimeFormatter.formatCommentDate(comment.getCreatedAt());
-        Span dateSpan = new Span(" • " + formattedCreatedAt);
+        Span dateSpan = new Span(" • " + CustomDateTimeFormatter.formatCommentDate(comment.getCreatedAt()));
         dateSpan.addClassName("profile-date");
 
-        Button deleteBtn = createDeleteButton(comment, currentUserId);
-        Button editBtn = createEditButton(comment, currentUserId);
+        boolean isCommentAuthor = currentUserId.equals(comment.getAuthorId());
+        boolean isPostOwner = currentUserId.equals(post.getAuthorId());
+        boolean canEdit = isCommentAuthor;
+        boolean canDelete = isCommentAuthor || isPostOwner;
 
-        deleteBtn.addClassName("profile-delete-btn");
+        Button editBtn = canEdit ? new Button("⚙️") : new Button();
+        Button deleteBtn = canDelete ? new Button("🗑") : new Button();
+
         editBtn.addClassName("profile-edit-btn");
+        deleteBtn.addClassName("profile-delete-btn");
+        editBtn.setVisible(canEdit);
+        deleteBtn.setVisible(canDelete);
+
+        if (canEdit) {
+            editBtn.addClickListener(e ->
+                    new EditComment(commentClient, comment.getId(), post.getPostId(),
+                            () -> reloadComments()).open());
+        }
+        if (canDelete) {
+            deleteBtn.addClickListener(e ->
+                    new DeleteComment(commentClient, comment.getId(), post.getPostId(),
+                            ignored -> reloadComments()).open());
+        }
 
         HorizontalLayout header = new HorizontalLayout(authorSpan, dateSpan, editBtn, deleteBtn);
         header.addClassName("profile-header-row");
         header.setWidthFull();
         header.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-        header.setAlignItems(Alignment.CENTER);
 
-        Paragraph commentText = new Paragraph(comment.getContent() != null ? comment.getContent() : "");
-        commentText.addClassName("profile-comment-text");
+        Paragraph text = new Paragraph(comment.getContent());
+        text.addClassName("profile-comment-text");
 
-        commentLayout.add(header, commentText);
-        container.add(commentLayout);
+        layout.add(header, text);
+        container.add(layout);
     }
 
-    private Button createEditButton(CommentDto comment, Long currentUserId) {
-        Button editBtn = new Button("⚙️");
-        editBtn.addClassName("profile-edit-btn");
-
-        boolean isAuthor = currentUserId != null && comment.getAuthorId() != null &&
-                currentUserId.equals(comment.getAuthorId());
-        editBtn.setVisible(isAuthor);
-
-        editBtn.addClickListener(e -> openEditDialog(comment)); // ✅ Готово!
-        return editBtn;
-    }
-
-    private void openEditDialog(CommentDto comment) {
-        EditComment dialog = new EditComment(
-                commentClient,
-                comment.getId(),
-                post.getPostId(),
-                this::reloadComments
-        );
-        dialog.open();
-    }
-
-    private Button createDeleteButton(CommentDto comment, Long currentUserId) {
-        Button deleteBtn = new Button("🗑 Удалить");
-        deleteBtn.addClassName("profile-delete-btn");
-
-        boolean isAuthor = currentUserId != null && comment.getAuthorId() != null &&
-                currentUserId.equals(comment.getAuthorId());
-        log.info("🔍 Комментарий {} является своим? {}", comment.getId(), isAuthor);
-        deleteBtn.setVisible(isAuthor);
-
-        deleteBtn.addClickListener(e -> {
-            log.info("🗑 КЛИК ПО УДАЛЕНИЮ commentId={}", comment.getId());
-
-            DeleteComment dialog = new DeleteComment(
-                    commentClient,
-                    comment.getId(),
-                    post.getPostId(),
-                    ignored -> reloadComments()  // перезагрузка
-            );
-            dialog.open();
-        });
-
-        return deleteBtn;
-    }
 }

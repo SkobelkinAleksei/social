@@ -25,7 +25,8 @@ public class ProfilePostsBlock extends VerticalLayout {
 
     public ProfilePostsBlock(
             List<PostDto> posts,
-            PostClient postClient, LikeClient likeClient,
+            PostClient postClient,
+            LikeClient likeClient,
             CommentClient commentClient,
             UserClient userClient,
             boolean isMyProfile
@@ -45,11 +46,6 @@ public class ProfilePostsBlock extends VerticalLayout {
         setPadding(false);
         setSpacing(true);
         addClassName("profile-card");
-
-        H3 title = new H3(isMyProfile ? "Мои посты" : "Посты пользователя");
-        title.addClassName("profile-title-h3");
-
-        add(title);
 
         if (posts == null || posts.isEmpty()) {
             Paragraph empty = new Paragraph(

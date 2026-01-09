@@ -27,13 +27,13 @@ public class LikeClient {
             try {
                 RequestData rd = new RequestData(BASE_URL + "/" + postId, null);
                 ResponseEntity<String> response = http.post(rd, String.class);
-                log.info("✅ toggleLike postId={} вернул статус: {}", postId, response.getBody());
+                log.info("toggleLike postId={} вернул статус: {}", postId, response.getBody());
                 return response.getBody();
             } catch (HttpStatusCodeException e) {
-                log.error("❌ HTTP ошибка toggleLike postId={} {}: {}", postId, e.getStatusCode(), e.getResponseBodyAsString());
+                log.error("HTTP ошибка toggleLike postId={} {}: {}", postId, e.getStatusCode(), e.getResponseBodyAsString());
                 throw new RuntimeException("HTTP " + e.getStatusCode() + ": " + e.getResponseBodyAsString(), e);
             } catch (Exception e) {
-                log.error("❌ Ошибка toggleLike postId={}: ", postId, e);
+                log.error("Ошибка toggleLike postId={}: ", postId, e);
                 throw new RuntimeException("Ошибка сервера: " + e.getMessage(), e);
             }
         });
@@ -46,13 +46,13 @@ public class LikeClient {
                 RequestData rd = new RequestData(BASE_URL + "/" + postId + "/list-like", null);
                 ResponseEntity<LikePostDto[]> response = http.get(rd, LikePostDto[].class);
                 List<LikePostDto> likes = response.getBody() != null ? Arrays.asList(response.getBody()) : List.of();
-                log.info("✅ getLikes postId={} вернул {} лайков", postId, likes.size());
+                log.info("getLikes postId={} вернул {} лайков", postId, likes.size());
                 return likes;
             } catch (HttpStatusCodeException e) {
-                log.error("❌ HTTP ошибка getLikes postId={} {}: {}", postId, e.getStatusCode(), e.getResponseBodyAsString());
-                return List.of();  // Возвращаем пустой список при ошибке
+                log.error("HTTP ошибка getLikes postId={} {}: {}", postId, e.getStatusCode(), e.getResponseBodyAsString());
+                return List.of();
             } catch (Exception e) {
-                log.error("❌ Ошибка getLikes postId={}: ", postId, e);
+                log.error("Ошибка getLikes postId={}: ", postId, e);
                 return List.of();
             }
         });
@@ -65,11 +65,30 @@ public class LikeClient {
                 RequestData rd = new RequestData(BASE_URL + "/" + postId + "/likes-count", null);
                 ResponseEntity<Long> response = http.get(rd, Long.class);
                 Long count = response.getBody();
-                log.info("✅ getLikesCount postId={} = {}", postId, count);
+                log.info("getLikesCount postId={} = {}", postId, count);
                 return count != null ? count : 0L;
             } catch (Exception e) {
-                log.error("❌ Ошибка getLikesCount postId={}: ", postId, e);
+                log.error("Ошибка getLikesCount postId={}: ", postId, e);
                 return 0L;
+            }
+        });
+    }
+
+    public CompletableFuture<Boolean> isLiked(Long postId, Long userId) {
+        log.info("LikeClient.isLiked: postId={}, userId={}", postId, userId);
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                RequestData rd = new RequestData(BASE_URL + "/" + postId + "/is-liked?userId=" + userId, null);
+                ResponseEntity<Boolean> response = http.get(rd, Boolean.class);
+                Boolean result = response.getBody();
+                log.info("isLiked postId={} userId={} = {}", postId, userId, result);
+                return result != null ? result : false;
+            } catch (HttpStatusCodeException e) {
+                log.warn("is-liked error {}: {}", e.getStatusCode(), e.getResponseBodyAsString());
+                return false;
+            } catch (Exception e) {
+                log.error("Ошибка isLiked: ", e);
+                return false;
             }
         });
     }

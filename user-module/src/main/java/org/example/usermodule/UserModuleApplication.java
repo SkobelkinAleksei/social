@@ -7,8 +7,8 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 
 //@EnableDiscoveryClient
 @SpringBootApplication(scanBasePackages = {
-        "org.example.usermodule",
         "org.example.security",
+        "org.example.usermodule",
         "org.example.common"
 }, exclude = {SecurityAutoConfiguration.class})
 public class UserModuleApplication {

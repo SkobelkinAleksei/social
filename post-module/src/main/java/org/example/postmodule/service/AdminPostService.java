@@ -1,6 +1,5 @@
 package org.example.postmodule.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.postmodule.dto.PostDto;
@@ -26,7 +25,6 @@ import java.util.List;
 @Service
 public class AdminPostService {
     private final PostRepository postRepository;
-    private final UserPostService userPostService;
     private final PostMapper postMapper;
     private final PostLookupService postLookupService;
 
@@ -39,7 +37,6 @@ public class AdminPostService {
     ) {
         log.info("[INFO] Админ запрашивает посты автора id: {} по статусам: {}, страница: {}, размер: {}",
                 authorId, moderationStatus, page, size);
-        Long userFromApi = userPostService.getUserFromApi();
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("publishAt").descending());
         Specification<PostEntity> spec = PostStatusSpecification.filter(moderationStatus)

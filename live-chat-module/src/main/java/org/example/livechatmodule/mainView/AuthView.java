@@ -143,7 +143,6 @@ public class AuthView extends VerticalLayout {
         loginCard.add(loginEmail);
         loginCard.add(loginPassword);
 
-        // ✅ Кнопка с огромным отступом!
         Button loginBtn = new Button("🚀 Войти", e -> handleLogin());
         loginBtn.setWidthFull();
         loginBtn.getStyle()

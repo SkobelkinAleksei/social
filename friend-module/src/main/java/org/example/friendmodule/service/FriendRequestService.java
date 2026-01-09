@@ -2,6 +2,7 @@ package org.example.friendmodule.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.example.common.dto.friend.FriendNotificationRequestDto;
 import org.example.friendmodule.dto.FriendRequestDto;
 import org.example.friendmodule.entity.FriendEntity;
 import org.example.friendmodule.entity.FriendRequestEntity;
@@ -32,7 +33,7 @@ public class FriendRequestService {
     private final FriendRequestRepository friendRequestRepository;
     private final FriendService friendService;
     private final FriendRequestMapper friendRequestMapper;
-    private final FriendLookupService friendLookupService;
+    private final FriendNotificationService friendNotificationService;
 
     @Transactional
     public FriendRequestDto addRequestFriend(Long requesterId, Long addresseeId) {
@@ -54,6 +55,9 @@ public class FriendRequestService {
         friendRequestEntity.setAddresseeId(addresseeId);
         friendRequestEntity.setStatus(FriendRequestStatus.PENDING);
         friendRequestEntity.setRespondedAt(LocalDateTime.now());
+
+        FriendNotificationRequestDto requestNotificationDto = new FriendNotificationRequestDto(requesterId, addresseeId);
+        friendNotificationService.sendFriendRequestNotification(requestNotificationDto);
 
         return friendRequestMapper.toDto(friendRequestRepository.save(friendRequestEntity));
     }

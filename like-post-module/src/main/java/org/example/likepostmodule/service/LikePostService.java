@@ -75,4 +75,11 @@ public class LikePostService {
     public Long countActiveLikesByPostId(Long postId) {
         return likeRepository.countActiveLikesByPostId(postId);
     }
+
+    public boolean isLikedByUser(Long postId, Long userId) {
+        log.info("🔍 Проверяем лайк postId={} userId={}", postId, userId);
+        boolean result = likeRepository.existsByPostIdAndAuthorIdAndLikeStatus(postId, userId, LikeStatus.ACTIVE);
+        log.info("✅ isLikedByUser postId={} userId={} → {}", postId, userId, result);
+        return result;
+    }
 }

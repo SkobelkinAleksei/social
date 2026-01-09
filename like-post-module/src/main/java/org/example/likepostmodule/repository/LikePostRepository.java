@@ -1,6 +1,7 @@
 package org.example.likepostmodule.repository;
 
 import org.example.likepostmodule.entity.LikePostEntity;
+import org.example.likepostmodule.entity.LikeStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,4 +24,6 @@ public interface LikePostRepository extends JpaRepository<LikePostEntity, Long> 
 
     @Query("SELECT COUNT(l) FROM LikePostEntity l WHERE l.postId = :postId AND l.likeStatus = 'ACTIVE'")
     long countActiveLikesByPostId(@Param("postId") Long postId);
+
+    boolean existsByPostIdAndAuthorIdAndLikeStatus(Long postId, Long authorId, LikeStatus likeStatus);
 }

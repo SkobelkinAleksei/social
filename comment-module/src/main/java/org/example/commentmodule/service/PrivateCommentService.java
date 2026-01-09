@@ -38,18 +38,19 @@ public class PrivateCommentService {
     }
 
     @Transactional
-    public String deleteCommentById(Long commentId, Long postAuthorId) {
+    public String deleteCommentById(Long commentId, Long currentUserId) {
         CommentEntity commentEntity = commentRepository.findById(commentId).orElseThrow(
-                () -> new EntityNotFoundException("Комментарий не был найден!"));
-        PostDto postDtoFromApi = commentLookupService.getPostDtoFromApi(commentEntity.getPostId());
+                () -> new EntityNotFoundException("Комментарий не найден!"));
 
-        if (!postDtoFromApi.getAuthorId().equals(postAuthorId)) {
-            throw new IllegalArgumentException("Нет доступа для удаления комментария!");
+        boolean isCommentAuthor = commentEntity.getAuthorId().equals(currentUserId);
+        boolean isPostOwner = commentEntity.getPostId() != null &&
+                commentLookupService.getPostDtoFromApi(commentEntity.getPostId()).getAuthorId().equals(currentUserId);
+
+        if (!isCommentAuthor && !isPostOwner) {
+            throw new IllegalArgumentException("Нет прав на удаление!");
         }
-        commentEntity.setCommentStatus(CommentStatus.REMOVED);
 
+        commentEntity.setCommentStatus(CommentStatus.REMOVED);
         return commentEntity.getCommentStatus().toString();
     }
-
-
 }

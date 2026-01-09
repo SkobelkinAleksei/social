@@ -54,7 +54,6 @@ public class PostJwtAuthFilter extends OncePerRequestFilter {
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                // ✅ Создаем UserDto для SecurityUtil.getCurrentUserId()
                 UserDto userDto = new UserDto();
                 userDto.setUserId(userId);
                 userDto.setEmail(email);

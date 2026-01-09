@@ -103,7 +103,6 @@ public class ChatView extends VerticalLayout implements HasUrlParameter<Long> {
         inputLayout.setSpacing(true);
         inputLayout.setPadding(true);
 
-        // ✅ Detach listener для очистки ресурсов
         addDetachListener(detachEvent -> stopScheduler());
 
         add(back, messagesBox, inputLayout);

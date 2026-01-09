@@ -60,7 +60,7 @@ public class IncomingRequestsView extends VerticalLayout implements BeforeEnterO
                 .set("width", "100%")
                 .set("max-width", "900px");
 
-        // ✅ ПРАВИЛЬНО: для входящих показываем отправителя (requesterId)
+        // для входящих показываем отправителя (requesterId)
         for (FriendRequestDto req : requests) {
             Long requesterId = req.getRequesterId();
             UserDto user = userClient.getUserById(requesterId);
@@ -71,6 +71,7 @@ public class IncomingRequestsView extends VerticalLayout implements BeforeEnterO
     }
 
     private Component buildIncomingCard(UserDto user, Long userId, Long requestId) {
+        UI currentUI = UI.getCurrent();
         Div cardContainer = new Div();
         cardContainer.addClassName("friend-card-container");
 
@@ -97,31 +98,37 @@ public class IncomingRequestsView extends VerticalLayout implements BeforeEnterO
         emailText.getStyle().set("color", "#6b7b8a").set("font-size", "14px").set("margin", "0 0 8px 0");
 
         // Кнопки действий
-        Button acceptBtn = new Button("✅ Принять", e -> {
+        Button acceptBtn = new Button("✅ Принять");
+        acceptBtn.addClassNames("vk-button", "accept-btn");
+        acceptBtn.getElement().addEventListener("click", e -> {
             friendRequestClient.acceptRequest(requestId)
                     .thenRun(() -> {
-                        Notification.show("✅ Заявка принята!", 2000, Notification.Position.TOP_CENTER);
-                        cardContainer.getElement().removeFromParent();
+                        currentUI.access(() -> {  // 🔥 В main UI thread
+                            Notification.show("✅ Заявка принята!", 2000, Notification.Position.TOP_CENTER);
+                            beforeEnter(null);  // ✅ Перезагружаем данные
+                        });
                     })
                     .exceptionally(t -> {
                         Notification.show("❌ Ошибка: " + t.getMessage(), 4000, Notification.Position.MIDDLE);
                         return null;
                     });
-        });
-        acceptBtn.addClassNames("vk-button", "accept-btn");
+        }).addEventData("event.stopPropagation()");
 
-        Button rejectBtn = new Button("❌ Отклонить", e -> {
+        Button rejectBtn = new Button("❌ Отклонить");
+        rejectBtn.addClassNames("vk-button", "reject-btn");
+        rejectBtn.getElement().addEventListener("click", e -> {
             friendRequestClient.rejectRequest(requestId)
                     .thenRun(() -> {
-                        Notification.show("❌ Заявка отклонена", 2000, Notification.Position.TOP_CENTER);
-                        cardContainer.getElement().removeFromParent();
+                        currentUI.access(() -> {
+                            Notification.show("❌ Заявка отклонена", 2000, Notification.Position.TOP_CENTER);
+                            beforeEnter(null);
+                        });
                     })
                     .exceptionally(t -> {
                         Notification.show("❌ Ошибка: " + t.getMessage(), 4000, Notification.Position.MIDDLE);
                         return null;
                     });
-        });
-        rejectBtn.addClassNames("vk-button", "reject-btn");
+        }).addEventData("event.stopPropagation()");
 
         HorizontalLayout buttons = new HorizontalLayout(acceptBtn, rejectBtn);
         buttons.setJustifyContentMode(JustifyContentMode.CENTER);

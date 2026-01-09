@@ -23,17 +23,17 @@ public class PostModalDialog extends Dialog {
     public PostModalDialog(PostClient postClient) {
         this.postClient = postClient;
 
-        // ✅ Авто-размер без скролла
+        // Авто-размер без скролла
         setWidth("500px");
         setMaxHeight("90vh");
         setResizable(true);
         addClassName("post-modal");
 
-        // ✅ Кастомный header без setHeaderTitle
+        // Кастомный header без setHeaderTitle
         H3 header = new H3("✍️ Создать пост");
         header.addClassNames("post-header");
 
-        // ✅ TextArea авто-высота
+        // TextArea авто-высота
         TextArea content = new TextArea();
         content.setWidthFull();
         content.setMinHeight("150px");
@@ -43,7 +43,7 @@ public class PostModalDialog extends Dialog {
         content.setRequired(true);
         content.setRequiredIndicatorVisible(true);
 
-        // ✅ Buttons
+        // Buttons
         Button cancelBtn = new Button("❌ Отмена", e -> close());
         submitBtn = new Button("📤 Опубликовать", e -> submitPost(content));
         submitBtn.addClassNames("primary");
@@ -54,7 +54,6 @@ public class PostModalDialog extends Dialog {
         buttons.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
         buttons.setPadding(true);
 
-        // ✅ Layout без скролла
         VerticalLayout form = new VerticalLayout(header, content, buttons);
         form.setSpacing(true);
         form.setPadding(false);
@@ -83,7 +82,7 @@ public class PostModalDialog extends Dialog {
 
         postClient.submitPost(dto)
                 .thenAccept(postId -> {
-                    log.info("✅ Пост создан ID: {}", postId);
+                    log.info("[INFO] Пост создан ID: {}", postId);
 
                     getUI().ifPresent(ui -> ui.access(() -> {
                         Notification.show("✅ Пост #" + postId + " отправлен на модерацию!",
@@ -93,7 +92,7 @@ public class PostModalDialog extends Dialog {
                     }));
                 })
                 .exceptionally(t -> {
-                    log.error("❌ Ошибка поста: ", t);
+                    log.error("[ERROR] Ошибка поста: ", t);
                     getUI().ifPresent(ui -> ui.access(() -> {
                         String msg = t.getMessage() != null ? t.getMessage() : "Неизвестная ошибка";
                         Notification.show("❌ " + msg, 5000, Notification.Position.MIDDLE);
