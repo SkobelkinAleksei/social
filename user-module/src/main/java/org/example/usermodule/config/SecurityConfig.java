@@ -3,20 +3,28 @@ package org.example.usermodule.config;
 import lombok.RequiredArgsConstructor;
 import org.example.usermodule.entity.enums.Role;
 import org.example.usermodule.security.JwtFilter;
+import org.example.usermodule.security.SecurityProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
 @RequiredArgsConstructor
 @EnableWebSecurity
+@EnableMethodSecurity
 @Configuration
+@EnableConfigurationProperties(SecurityProperties.class)
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
@@ -31,25 +39,39 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/actuator/**").permitAll()
+
                         .requestMatchers(
-                                "/social/v1/public/auth/login",
-                                "/social/v1/public/auth/registration",
-                                "/social/v1/public/auth/refresh",
-                                "/", "/error"
+                                "/social/public/**",
+                                "/error",
+                                "/"
                         ).permitAll()
 
-                        .requestMatchers("/admin/**").hasRole(Role.ADMIN.name())
+                        .requestMatchers(
+                                "/social/v1/admin/**"
+                        ).hasRole(
+                                Role.ADMIN.name()
+                        )
+
                         .requestMatchers(
                                 "/social/v1/users/**"
-                        ).hasAnyRole(Role.USER.name(), Role.ADMIN.name())
+                        ).hasAnyRole(
+                                Role.USER.name()
+                        )
 
                         .anyRequest().authenticated()
                 )
 
                 // добавляем JWT-фильтр перед UsernamePasswordAuthenticationFilter
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter, AuthorizationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        return http.getSharedObject(AuthenticationManagerBuilder.class)
+                .build();
     }
 
     @Bean

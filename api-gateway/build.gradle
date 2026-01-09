@@ -8,10 +8,10 @@ group = 'org.example'
 version = '0.0.1-SNAPSHOT'
 description = 'api-gateway'
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
+
+repositories {
+    mavenCentral()
+    maven { url "https://repo.spring.io/release" }
 }
 
 ext {
@@ -26,6 +26,7 @@ dependencyManagement {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     implementation "org.springframework.boot:spring-boot-starter-webflux"
@@ -33,7 +34,10 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-data-redis-reactive"
     implementation "io.lettuce:lettuce-core"
 
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    testImplementation 'org.springframework.security:spring-security-test'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
@@ -45,6 +49,8 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
+tasks.withType(Test).configureEach {
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }

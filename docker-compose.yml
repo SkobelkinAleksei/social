@@ -1,7 +1,46 @@
-version: '3.8'
 services:
+  eureka:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8081:8081"
+    depends_on:
+      - eureka
+      - redis
+
+  user-module:
+    build:
+      context: ./user-module
+      dockerfile: Dockerfile
+    container_name: user-module
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka
+      - redis
+
   redis:
     image: redis:7
     container_name: redis
     ports:
       - "6379:6379"
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: social
+    ports:
+      - "5432:5432"

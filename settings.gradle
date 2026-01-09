@@ -16,4 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "social-new"
 
-include("api-gateway", "user-module", "eureka-server")
+include("api-gateway", "user-module", "eureka-server", "post-module")

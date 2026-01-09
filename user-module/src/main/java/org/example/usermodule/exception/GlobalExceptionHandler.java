@@ -31,17 +31,29 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<DefaultErrorMessage> handleIllegalArgumentException(
-            IllegalArgumentException ex, HttpServletRequest request
-    ) {
-        log.error("[ERROR] IllegalArgumentException ", ex);
+            IllegalArgumentException ex, HttpServletRequest request) {
 
-        return getResponseEntity("Bad Request",
-                ex.getMessage(),
-                HttpStatus.BAD_REQUEST.value(),
-                request.getRequestURI(),
-                null,
-                "BAD_REQUEST"
-        );
+        log.error("[ОШИБКА] Некорректный аргумент", ex);
+
+        if (ex.getMessage() != null && ex.getMessage().contains("пароль")) {
+            return getResponseEntity(
+                    "Неверный пароль",
+                    ex.getMessage(),
+                    HttpStatus.UNAUTHORIZED.value(),
+                    request.getRequestURI(),
+                    null,
+                    "НЕВЕРНЫЙ_ПАРОЛЬ"
+            );
+        } else {
+            return getResponseEntity(
+                    "Ошибка",
+                    ex.getMessage(),
+                    HttpStatus.BAD_REQUEST.value(),
+                    request.getRequestURI(),
+                    null,
+                    "ОШИБКА"
+            );
+        }
     }
 
     @ExceptionHandler(IllegalStateException.class)

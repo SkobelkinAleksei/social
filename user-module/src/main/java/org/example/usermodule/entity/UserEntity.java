@@ -6,6 +6,7 @@ import org.example.usermodule.entity.enums.Role;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 @Builder
 @Getter
@@ -32,7 +33,7 @@ public class UserEntity {
     @Column(name = "number_phone", unique = true, nullable = false)
     private String numberPhone;
 
-    @Column(name = "password", nullable = false, length = 20)
+    @Column(name = "password", nullable = false, length = 100)
     private String password;
 
     @Column(columnDefinition = "TIMESTAMP", name = "birthday", nullable = false)
@@ -44,10 +45,4 @@ public class UserEntity {
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
-
-//    @OneToMany(mappedBy = "userEntity", cascade = CascadeType.ALL)
-//    private List<FriendEntity> friendList = new ArrayList<>();
-//
-//    @OneToMany(mappedBy = "userEntity")
-//    private List<PostEntity> postList = new ArrayList<>();
 }

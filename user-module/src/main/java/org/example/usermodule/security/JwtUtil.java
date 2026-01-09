@@ -1,52 +1,73 @@
 package org.example.usermodule.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import org.example.usermodule.dto.JwtUserData;
 import org.example.usermodule.entity.UserEntity;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Base64;
 import java.util.Date;
 
-@RequiredArgsConstructor
 @Component
+@RequiredArgsConstructor
 public class JwtUtil {
 
-    private final String accessSecret = "ACCESS_SECRET_KEY_1234567890";
-    private final String refreshSecret = "REFRESH_SECRET_KEY_1234567890";
+    private final SecurityProperties securityProperties;
+
+    private SecretKey getAccessKey() {
+        return Keys.hmacShaKeyFor(
+                Base64.getDecoder().decode(securityProperties.getAccessSecret())
+        );
+    }
+
+    private SecretKey getRefreshKey() {
+        return Keys.hmacShaKeyFor(
+                Base64.getDecoder().decode(securityProperties.getRefreshSecret())
+        );
+    }
 
     public String generateAccessToken(UserEntity user) {
         return Jwts.builder()
-                .setSubject(user.getEmail())
+                .claim("id", user.getId())
                 .claim("role", user.getRole().name())
                 .setExpiration(Date.from(Instant.now().plus(15, ChronoUnit.MINUTES)))
-                .signWith(SignatureAlgorithm.HS256, accessSecret)
+                .signWith(getAccessKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public String generateRefreshToken(UserEntity user) {
         return Jwts.builder()
-                .setSubject(user.getEmail())
+                .claim("id", user.getId())
                 .setExpiration(Date.from(Instant.now().plus(30, ChronoUnit.DAYS)))
-                .signWith(SignatureAlgorithm.HS256, refreshSecret)
+                .signWith(getRefreshKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String validateAccessToken(String token) {
-        return Jwts.parser()
-                .setSigningKey(accessSecret)
+    public JwtUserData validateAccessToken(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(getAccessKey())
                 .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+                .getBody();
+
+        Long id = claims.get("id", Long.class);
+        String role = claims.get("role", String.class);
+
+        return new JwtUserData(id, role);
     }
 
-    public String validateRefreshToken(String token) {
-        return Jwts.parser()
-                .setSigningKey(refreshSecret)
+    public Long validateRefreshToken(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(getRefreshKey())
                 .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+                .getBody();
+
+        return claims.get("id", Long.class);
     }
 }
