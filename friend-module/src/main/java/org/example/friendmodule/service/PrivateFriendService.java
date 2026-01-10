@@ -2,6 +2,7 @@ package org.example.friendmodule.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.common.dto.friend.FriendNotificationDto;
 import org.example.common.security.SecurityUtil;
 import org.example.friendmodule.entity.FriendEntity;
 import org.example.friendmodule.repository.FriendRepository;
@@ -19,6 +20,7 @@ import java.util.Optional;
 public class PrivateFriendService {
     private final FriendRepository friendRepository;
     private final FriendRequestRepository friendRequestRepository;
+    private final FriendNotificationService friendNotificationService;
 
     @Transactional
     public void deleteFriendById(Long currentUserId, Long userId2) {
@@ -36,6 +38,9 @@ public class PrivateFriendService {
             friendRequestRepository.deleteById(requestId);
             log.info("[INFO] Request {} удалён", requestId);
         });
+
+        FriendNotificationDto friendNotificationDto = new FriendNotificationDto(currentUserId, userId2);
+        friendNotificationService.deleteFriendNotification(friendNotificationDto);
 
         friendRepository.deleteById(friendEntity.getId());
         log.info("[INFO] Дружба была разорвана.");

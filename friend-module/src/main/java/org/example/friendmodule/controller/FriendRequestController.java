@@ -26,7 +26,7 @@ public class FriendRequestController {
             @RequestParam Long addresseeId
     ) {
         Long currentUserId = SecurityUtil.getCurrentUserId();
-        return ResponseEntity.ok().body(friendRequestService.addRequestFriend(currentUserId, addresseeId));
+        return ResponseEntity.ok().body(friendRequestService.addFriendRequest(currentUserId, addresseeId));
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")

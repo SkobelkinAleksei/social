@@ -58,6 +58,10 @@ public class KafkaValueConfig {
         log.info("Topics: {}, Groups: {}", topics, groups);
     }
 
+    public String getGroup(String key) {
+        return groups != null ? groups.get(key) : null;
+    }
+
     @ToString
     @Getter
     @Setter
