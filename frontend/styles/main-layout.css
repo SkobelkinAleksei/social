@@ -1,0 +1,5 @@
+.notify-accept, .notify-decline {
+    padding: 8px 16px !important;
+    border-radius: 6px !important;
+    font-weight: 500 !important;
+}

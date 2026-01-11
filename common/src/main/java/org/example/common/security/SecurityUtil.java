@@ -18,13 +18,11 @@ public class SecurityUtil {
             return null;
         }
 
-        // Сначала пробуем из details (установлено JwtAuthFilter)
         Map<?, ?> details = auth.getDetails() instanceof Map ? (Map<?, ?>) auth.getDetails() : null;
         if (details != null && details.containsKey("userId")) {
             return (Long) details.get("userId");
         }
 
-        // Fallback на UserDto
         Object principal = auth.getPrincipal();
         if (principal instanceof UserDto userDto) {
             return userDto.getUserId();

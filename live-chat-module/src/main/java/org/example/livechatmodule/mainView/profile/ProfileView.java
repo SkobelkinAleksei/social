@@ -45,10 +45,8 @@ public class ProfileView extends HorizontalLayout implements BeforeEnterObserver
             String userIdParam = event.getRouteParameters().get("userId").orElse(null);
 
             if (userIdParam != null) {
-                // Чужой профиль
                 viewedUserId = Long.valueOf(userIdParam);
             } else {
-                // Мой профиль
                 isOwnProfile = true;
             }
 
@@ -93,7 +91,7 @@ public class ProfileView extends HorizontalLayout implements BeforeEnterObserver
         userDto.setNumberPhone(dto.getNumberPhone());
         return userDto;
     }
-    
+
     private Component buildMainContent(UserDto user, List<PostDto> posts) {
         Long currentUserId = userClient.getCurrentUserId();
 

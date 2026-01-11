@@ -2,7 +2,8 @@ package org.example.friendmodule.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.common.dto.friend.FriendNotificationRequestDto;
+import org.example.common.dto.friend.FriendNotificationDto;
+import org.example.common.dto.friend.FriendNotificationResponseDto;
 import org.example.friendmodule.dto.FriendRequestDto;
 import org.example.friendmodule.entity.FriendEntity;
 import org.example.friendmodule.entity.FriendRequestEntity;
@@ -10,7 +11,6 @@ import org.example.friendmodule.entity.FriendRequestStatus;
 import org.example.friendmodule.entity.ResponseFriendRequest;
 import org.example.friendmodule.mapper.FriendRequestMapper;
 import org.example.friendmodule.repository.FriendRequestRepository;
-import org.example.friendmodule.util.FriendLookupService;
 import org.example.friendmodule.util.FriendRequestSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,7 +36,7 @@ public class FriendRequestService {
     private final FriendNotificationService friendNotificationService;
 
     @Transactional
-    public FriendRequestDto addRequestFriend(Long requesterId, Long addresseeId) {
+    public FriendRequestDto addFriendRequest(Long requesterId, Long addresseeId) {
 
         if (requesterId.equals(addresseeId)) {
             throw new IllegalArgumentException("Нельзя добавить себя в друзья");
@@ -56,7 +56,9 @@ public class FriendRequestService {
         friendRequestEntity.setStatus(FriendRequestStatus.PENDING);
         friendRequestEntity.setRespondedAt(LocalDateTime.now());
 
-        FriendNotificationRequestDto requestNotificationDto = new FriendNotificationRequestDto(requesterId, addresseeId);
+        FriendNotificationDto requestNotificationDto = new FriendNotificationDto(
+                addresseeId, requesterId
+        );
         friendNotificationService.sendFriendRequestNotification(requestNotificationDto);
 
         return friendRequestMapper.toDto(friendRequestRepository.save(friendRequestEntity));
@@ -72,13 +74,9 @@ public class FriendRequestService {
             throw new AccessDeniedException("Только автор заявки может её удалить!");
         }
 
-        friendRequestRepository.deleteById(requestEntity.getId());
-    }
-
-    @Transactional
-    public void deleteRequestById(Long requestId) {
-        FriendRequestEntity requestEntity = friendRequestRepository.findById(requestId)
-                .orElseThrow(() -> new EntityNotFoundException("Такой запрос не был найден! "));
+        if (requestEntity.getStatus().equals(FriendRequestStatus.ACCEPTED)) {
+            throw new IllegalStateException("Заявка уже принята. Требуется удалить из друзей");
+        }
 
         friendRequestRepository.deleteById(requestEntity.getId());
     }
@@ -137,8 +135,31 @@ public class FriendRequestService {
             friendEntity.setUserId1(userId);
             friendEntity.setUserId2(requestEntity.getRequesterId());
             friendService.createFriendship(friendEntity);
+
+            // уведомление принявшему: вы теперь друзья
+            FriendNotificationResponseDto responseDtoForRequester = new FriendNotificationResponseDto(
+                    requestId,
+                    requestEntity.getRequesterId(),
+                    status.toString()
+            );
+            friendNotificationService.responseToRequestNotification(responseDtoForRequester);
+
+            // уведомление отправителю: заявка принята
+            FriendNotificationResponseDto responseDtoForAddressee = new FriendNotificationResponseDto(
+                    requestId,
+                    requestEntity.getAddresseeId(),
+                    "NOW_FRIENDS"
+            );
+            friendNotificationService.responseToRequestNotification(responseDtoForAddressee);
         } else if (status.equals(ResponseFriendRequest.REJECTED)) {
             requestEntity.setStatus(FriendRequestStatus.REJECTED);
+            // уведомление отправителю: заявка отказано
+            FriendNotificationResponseDto responseDtoForRequester = new FriendNotificationResponseDto(
+                    requestId,
+                    requestEntity.getRequesterId(),
+                    status.toString()
+            );
+            friendNotificationService.responseToRequestNotification(responseDtoForRequester);
         }
 
         return requestEntity.getStatus().toString();

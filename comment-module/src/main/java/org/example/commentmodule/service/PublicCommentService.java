@@ -10,6 +10,7 @@ import org.example.commentmodule.entity.CommentStatus;
 import org.example.commentmodule.mapper.CommentMapper;
 import org.example.commentmodule.repository.CommentRepository;
 import org.example.commentmodule.util.CommentLookupService;
+import org.example.common.dto.comment.CommentNotificationDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ public class PublicCommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final CommentLookupService commentLookupService;
+    private final CommentNotificationService commentNotification;
 
     @Transactional
     public CommentDto createComment(Long authorId, Long postId, NewCommentDto newCommentDto) {
@@ -33,6 +35,9 @@ public class PublicCommentService {
         commentEntity.setAuthorId(authorId);
         commentEntity.setPostId(postFromApi);
         commentEntity.setCommentStatus(CommentStatus.PUBLISHED);
+
+        CommentNotificationDto commentNotificationDto = new CommentNotificationDto(authorId, postId, newCommentDto.getContent());
+        commentNotification.sendCommentNotification(commentNotificationDto);
 
         return commentMapper.toDto(
                 commentRepository.save(commentEntity)

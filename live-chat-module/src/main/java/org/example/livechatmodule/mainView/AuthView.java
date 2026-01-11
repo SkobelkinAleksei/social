@@ -17,6 +17,8 @@ import org.example.common.dto.auth.LoginUserDto;
 import org.example.common.dto.auth.RegistrationUserDto;
 import org.example.livechatmodule.client.AuthClient;
 
+import java.util.Optional;
+
 @Slf4j
 @Route("auth")
 public class AuthView extends VerticalLayout {
@@ -37,12 +39,14 @@ public class AuthView extends VerticalLayout {
 
     public AuthView(AuthClient authClient) {
         this.authClient = authClient;
+        log.info("Инициализация AuthView");
         buildLayout();
     }
 
     private void buildLayout() {
+        log.debug("Построение layout авторизации");
         setSizeFull();
-        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
+        setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.CENTER);
         getStyle().set("background-color", "#f8fafc");
 
         HorizontalLayout mainContainer = new HorizontalLayout();
@@ -60,9 +64,11 @@ public class AuthView extends VerticalLayout {
         mainContainer.setFlexGrow(1, loginForm);
 
         add(mainContainer);
+        log.debug("Layout авторизации построен");
     }
 
     private Component buildRegistrationForm() {
+        log.debug("Создание формы регистрации");
         VerticalLayout regCard = new VerticalLayout();
         regCard.setWidth("550px");
         regCard.setHeight("650px");
@@ -91,14 +97,7 @@ public class AuthView extends VerticalLayout {
         regPassword.setWidthFull();
         regBirthday.setWidthFull();
 
-        regCard.add(regTitle);
-
-        regCard.add(regEmail);
-        regCard.add(regFirstName);
-        regCard.add(regLastName);
-        regCard.add(regPhone);
-        regCard.add(regPassword);
-        regCard.add(regBirthday);
+        regCard.add(regTitle, regEmail, regFirstName, regLastName, regPhone, regPassword, regBirthday);
 
         Button regBtn = new Button("🎉 Создать аккаунт", e -> handleSignUp());
         regBtn.setWidthFull();
@@ -116,6 +115,7 @@ public class AuthView extends VerticalLayout {
     }
 
     private Component buildLoginForm() {
+        log.debug("Создание формы логина");
         VerticalLayout loginCard = new VerticalLayout();
         loginCard.setWidth("450px");
         loginCard.setHeight("500px");
@@ -139,9 +139,7 @@ public class AuthView extends VerticalLayout {
         loginEmail.setWidthFull();
         loginPassword.setWidthFull();
 
-        loginCard.add(loginTitle);
-        loginCard.add(loginEmail);
-        loginCard.add(loginPassword);
+        loginCard.add(loginTitle, loginEmail, loginPassword);
 
         Button loginBtn = new Button("🚀 Войти", e -> handleLogin());
         loginBtn.setWidthFull();
@@ -159,6 +157,7 @@ public class AuthView extends VerticalLayout {
     }
 
     private void handleSignUp() {
+        log.info("Обработка регистрации: {}", regEmail.getValue());
         try {
             RegistrationUserDto dto = new RegistrationUserDto(
                     regFirstName.getValue(),
@@ -169,25 +168,46 @@ public class AuthView extends VerticalLayout {
                     regBirthday.getValue()
             );
             authClient.signUp(dto);
+            log.info("Пользователь {} успешно зарегистрирован", regEmail.getValue());
             Notification.show("✅ Аккаунт создан! Теперь войдите.", 3000, Notification.Position.TOP_CENTER);
             clearRegFields();
         } catch (Exception ex) {
+            log.error("Ошибка регистрации для {}: {}", regEmail.getValue(), ex.getMessage(), ex);
             Notification.show("❌ Ошибка регистрации: " + ex.getMessage(), 5000, Notification.Position.TOP_CENTER);
         }
     }
 
     private void handleLogin() {
+        String email = loginEmail.getValue();
+        log.info("🔑 Логин для: {}", email);
+
         try {
-            LoginUserDto dto = new LoginUserDto(loginEmail.getValue(), loginPassword.getValue());
+            LoginUserDto dto = new LoginUserDto(email, loginPassword.getValue());
             authClient.login(dto);
+            log.info("✅ Авторизация успешна для {}", email);
+
+            // 🔥 ПРЯМАЯ НАВИГАЦИЯ - без лишних проверок!
+            getUI().ifPresent(ui -> {
+                ui.navigate("profile"); // Без параметров = свой профиль
+                log.info("🔄 Навигация на /profile");
+            });
+
             Notification.show("✅ Добро пожаловать!", 2000, Notification.Position.TOP_CENTER);
-            UI.getCurrent().navigate("profile");
+            clearLoginFields();
+
         } catch (Exception ex) {
-            Notification.show("❌ Ошибка входа: " + ex.getMessage(), 5000, Notification.Position.TOP_CENTER);
+            log.error("❌ Ошибка логина: {}", ex.getMessage(), ex);
+            Notification.show("❌ " + ex.getMessage(), 5000, Notification.Position.TOP_CENTER);
         }
     }
 
+    private void clearLoginFields() {
+        loginEmail.clear();
+        loginPassword.clear();
+    }
+
     private void clearRegFields() {
+        log.debug("Очистка полей регистрации");
         regEmail.clear();
         regFirstName.clear();
         regLastName.clear();

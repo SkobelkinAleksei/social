@@ -24,7 +24,9 @@ public class PublicCommentController {
             @RequestBody NewCommentDto newCommentDto
     ) {
         Long currentUserId = SecurityUtil.getCurrentUserId();
-        return ResponseEntity.ok().body(commentService.createComment(currentUserId, postId, newCommentDto));
+        return ResponseEntity.ok().body(
+                commentService.createComment(currentUserId, postId, newCommentDto)
+        );
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")

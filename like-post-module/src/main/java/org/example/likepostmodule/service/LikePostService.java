@@ -2,6 +2,7 @@ package org.example.likepostmodule.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.common.dto.post.LikePostNotificationDto;
 import org.example.likepostmodule.dto.LikePostDto;
 import org.example.likepostmodule.entity.LikePostEntity;
 import org.example.likepostmodule.entity.LikeStatus;
@@ -19,6 +20,7 @@ import java.util.Optional;
 @Service
 public class LikePostService {
     private final LikePostRepository likeRepository;
+    private final LikeNotificationService likeNotification;
     private final LikePostMapper likeMapper;
 
     @Transactional(readOnly = true)
@@ -48,6 +50,9 @@ public class LikePostService {
                 likeEntity.setLikeStatus(LikeStatus.NO_ACTIVE);
                 log.info("[INFO] Лайк id: {} переключен в статус NO_ACTIVE", likeEntity.getId());
             } else {
+                LikePostNotificationDto likePostNotificationDto = new LikePostNotificationDto(postId, authorId);
+                likeNotification.sendLikeNotification(likePostNotificationDto);
+
                 likeEntity.setLikeStatus(LikeStatus.ACTIVE);
                 log.info("[INFO] Лайк id: {} переключен в статус ACTIVE", likeEntity.getId());
             }
