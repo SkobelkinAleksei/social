@@ -34,7 +34,7 @@ public class PostClient {
         return body == null ? List.of() : Arrays.asList(body);
     }
 
-    public CompletableFuture<PostDto> getPostByIdForUser(Long postId, Long userId) {
+    public CompletableFuture<PostDto> getPostById(Long postId) {
         log.info("[INFO] PostClient.viewPost: postId={}", postId);
         return CompletableFuture.supplyAsync(() -> {
             try {

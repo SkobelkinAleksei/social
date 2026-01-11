@@ -39,7 +39,7 @@ public class PrivateFriendService {
             log.info("[INFO] Request {} удалён", requestId);
         });
 
-        FriendNotificationDto friendNotificationDto = new FriendNotificationDto(currentUserId, userId2);
+        FriendNotificationDto friendNotificationDto = new FriendNotificationDto(userId2, currentUserId);
         friendNotificationService.deleteFriendNotification(friendNotificationDto);
 
         friendRepository.deleteById(friendEntity.getId());

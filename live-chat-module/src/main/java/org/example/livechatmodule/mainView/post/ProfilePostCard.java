@@ -165,7 +165,7 @@ public class ProfilePostCard extends VerticalLayout {
         if (now.minusSeconds(3).isAfter(lastViewTime)) {
             lastViewTime = now;
             log.info("👁 View: {}", post.getPostId());
-            postClient.getPostByIdForUser(post.getPostId(), null)
+            postClient.getPostById(post.getPostId())
                     .thenRun(this::updateViewCount);
         }
     }
@@ -180,7 +180,7 @@ public class ProfilePostCard extends VerticalLayout {
 
     private void showViews() {
         // Дополнительный просмотр при клике на глазик
-        postClient.getPostByIdForUser(post.getPostId(), null);
+        postClient.getPostById(post.getPostId());
 
         postClient.getPostViews(post.getPostId())
                 .thenAccept(views -> getUI().ifPresent(ui -> ui.access(() -> {

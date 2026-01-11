@@ -135,17 +135,32 @@ public class FriendRequestService {
             friendEntity.setUserId1(userId);
             friendEntity.setUserId2(requestEntity.getRequesterId());
             friendService.createFriendship(friendEntity);
+
+            // уведомление принявшему: вы теперь друзья
+            FriendNotificationResponseDto responseDtoForRequester = new FriendNotificationResponseDto(
+                    requestId,
+                    requestEntity.getRequesterId(),
+                    status.toString()
+            );
+            friendNotificationService.responseToRequestNotification(responseDtoForRequester);
+
+            // уведомление отправителю: заявка принята
+            FriendNotificationResponseDto responseDtoForAddressee = new FriendNotificationResponseDto(
+                    requestId,
+                    requestEntity.getAddresseeId(),
+                    "NOW_FRIENDS"
+            );
+            friendNotificationService.responseToRequestNotification(responseDtoForAddressee);
         } else if (status.equals(ResponseFriendRequest.REJECTED)) {
             requestEntity.setStatus(FriendRequestStatus.REJECTED);
+            // уведомление отправителю: заявка отказано
+            FriendNotificationResponseDto responseDtoForRequester = new FriendNotificationResponseDto(
+                    requestId,
+                    requestEntity.getRequesterId(),
+                    status.toString()
+            );
+            friendNotificationService.responseToRequestNotification(responseDtoForRequester);
         }
-
-
-        FriendNotificationResponseDto responseDto = new FriendNotificationResponseDto(
-                requestId,
-                requestEntity.getRequesterId(),
-                status.toString()
-        );
-        friendNotificationService.responseToRequestNotification(responseDto);
 
         return requestEntity.getStatus().toString();
     }

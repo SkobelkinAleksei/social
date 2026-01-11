@@ -1,19 +1,19 @@
-//package org.example.friendnotification.service;
+//package org.example.livechatmodule.service;
 //
 //import lombok.RequiredArgsConstructor;
 //import lombok.extern.slf4j.Slf4j;
 //import org.example.common.NotificationBroadcaster;
 //import org.example.common.dto.friend.FriendNotificationDto;
 //import org.example.common.dto.friend.FriendNotificationResponseDto;
-//import org.springframework.kafka.annotation.KafkaListener;
 //import org.springframework.stereotype.Service;
+//import org.springframework.kafka.annotation.KafkaListener;
 //
 //@Slf4j
 //@Service
 //@RequiredArgsConstructor
 //public class KafkaListenerService {
 //
-//    private final NotificationBroadcaster broadcaster; // ✅ Правильный тип
+//    private final NotificationBroadcaster broadcaster;
 //
 //    @KafkaListener(topics = "${kafka.topics.friend-notification-request.name}",
 //            containerFactory = "requestListenerFactory")
@@ -52,41 +52,3 @@
 //        broadcaster.broadcast(event);
 //    }
 //}
-package org.example.friendnotification.service;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.example.common.dto.friend.FriendNotificationDto;
-import org.example.common.dto.friend.FriendNotificationResponseDto;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
-@Slf4j
-@Service
-@RequiredArgsConstructor
-public class NotificationSenderService {
-
-    private final RestTemplate restTemplate = new RestTemplate();
-
-    @KafkaListener(topics = "${kafka.topics.friend-notification-request.name}",
-            containerFactory = "requestListenerFactory")
-    public void sendFriendRequest(FriendNotificationDto dto) {
-        log.info("[KAFKA→LIVECHAT] Friend request: {}", dto);
-        restTemplate.postForEntity("http://localhost:8070/api/notify/friend-request", dto, Void.class);
-    }
-
-    @KafkaListener(topics = "${kafka.topics.friend-notification-response.name}",
-            containerFactory = "responseListenerFactory")
-    public void sendFriendResponse(FriendNotificationResponseDto dto) {
-        log.info("[KAFKA→LIVECHAT] Friend response: {}", dto);
-        restTemplate.postForEntity("http://localhost:8070/api/notify/friend-response", dto, Void.class);
-    }
-
-    @KafkaListener(topics = "${kafka.topics.friend-notification-delete.name}",
-            containerFactory = "deleteListenerFactory")
-    public void sendFriendDelete(FriendNotificationDto dto) {
-        log.info("[KAFKA→LIVECHAT] Friend delete: {}", dto);
-        restTemplate.postForEntity("http://localhost:8070/api/notify/friend-delete", dto, Void.class);
-    }
-}

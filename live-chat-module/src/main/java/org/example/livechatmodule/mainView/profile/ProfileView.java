@@ -1,7 +1,6 @@
 package org.example.livechatmodule.mainView.profile;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.notification.Notification;
@@ -42,99 +41,44 @@ public class ProfileView extends HorizontalLayout implements BeforeEnterObserver
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        log.info("🔥 beforeEnter ProfileView вызван");
-
-        String userIdParam = event.getRouteParameters().get("userId").orElse(null);
-
-        if (userIdParam != null) {
-            try {
-                viewedUserId = Long.valueOf(userIdParam);
-                isOwnProfile = false;
-                log.info("Профиль пользователя ID: {}", viewedUserId);
-            } catch (NumberFormatException e) {
-                log.error("Неверный userId: {}", userIdParam);
-                showError("Неверный ID пользователя");
-                return;
-            }
-        } else {
-            isOwnProfile = true;
-            log.info("Собственный профиль");
-        }
-
-        UI ui = event.getUI();
-        if (ui != null) {
-            ui.access(this::loadProfile);
-        } else {
-            log.error("UI недоступен в beforeEnter");
-        }
-    }
-
-    private void loadProfile() {
-        log.info("🚀 Загрузка профиля в UI потоке");
-
-        removeAll(); // Очищаем сразу
-
         try {
-            UserDto userDto = loadUserData();
-            List<PostDto> posts = postClient.getUserPosts(viewedUserId);
-            log.info("Загружено {} постов", posts.size());
+            String userIdParam = event.getRouteParameters().get("userId").orElse(null);
 
-            add(buildMainContent(userDto, posts));
+            if (userIdParam != null) {
+                viewedUserId = Long.valueOf(userIdParam);
+            } else {
+                isOwnProfile = true;
+            }
 
+            initLayout();
         } catch (Exception e) {
-            log.error("Ошибка загрузки профиля", e);
-            showError("Ошибка загрузки профиля: " + e.getMessage());
+            log.error("[ERROR] Ошибка загрузки профиля: {}", e.getMessage(), e);
+            showError("Ошибка загрузки профиля");
         }
     }
 
-    private UserDto loadUserData() {
+    private void initLayout() {
+        removeAll();
+
+        UserDto userDto;
         if (isOwnProfile) {
             UserFullDto userFullDto = userClient.getMyProfile();
             if (userFullDto == null) {
-                throw new RuntimeException("Не удалось загрузить профиль");
+                add(new H3("Ошибка загрузки профиля"));
+                return;
             }
-            viewedUserId = userFullDto.getId();
-            return mapToDto(userFullDto);
+            userDto = mapToDto(userFullDto);
+            viewedUserId = userDto.getUserId();
         } else {
-            UserDto userDto = userClient.getUserById(viewedUserId);
+            userDto = userClient.getUserById(viewedUserId);
             if (userDto == null) {
-                throw new RuntimeException("Пользователь не найден");
+                add(new H3("Пользователь не найден"));
+                return;
             }
-            return userDto;
         }
-    }
 
-    private Component buildMainContent(UserDto user, List<PostDto> posts) {
-        Long currentUserId = userClient.getCurrentUserId();
-
-        VerticalLayout mainContent = new VerticalLayout();
-        mainContent.setWidthFull();
-        mainContent.setPadding(false);
-        mainContent.setSpacing(true);
-        mainContent.setAlignItems(FlexComponent.Alignment.CENTER);
-        mainContent.addClassName("profile-main-content");
-
-        ProfileInfoCard infoCard = new ProfileInfoCard(
-                user, friendClient, friendRequestClient, currentUserId
-        );
-        ProfilePostsBlock postsBlock = new ProfilePostsBlock(
-                posts, postClient, likeClient, commentClient, userClient, isOwnProfile
-        );
-
-        mainContent.add(infoCard, postsBlock);
-        return mainContent;
-    }
-
-    private void showError(String message) {
-        log.error("Показ ошибки: {}", message);
-        removeAll();
-        Notification.show(message, 5000, Notification.Position.TOP_CENTER);
-
-        VerticalLayout errorLayout = new VerticalLayout();
-        errorLayout.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.CENTER);
-        errorLayout.setPadding(true);
-        errorLayout.add(new H3(message));
-        add(errorLayout);
+        List<PostDto> posts = postClient.getUserPosts(viewedUserId);
+        add(buildMainContent(userDto, posts));
     }
 
     private UserDto mapToDto(UserFullDto dto) {
@@ -146,5 +90,36 @@ public class ProfileView extends HorizontalLayout implements BeforeEnterObserver
         userDto.setBirthday(dto.getBirthday());
         userDto.setNumberPhone(dto.getNumberPhone());
         return userDto;
+    }
+
+    private Component buildMainContent(UserDto user, List<PostDto> posts) {
+        Long currentUserId = userClient.getCurrentUserId();
+
+        VerticalLayout content = new VerticalLayout();
+        content.setWidthFull();
+        content.setPadding(false);
+        content.setSpacing(true);
+        content.setAlignItems(FlexComponent.Alignment.CENTER);
+        content.addClassName("profile-main-content");
+
+         ProfileInfoCard infoCard = new ProfileInfoCard(
+            user, friendClient, friendRequestClient, currentUserId
+        );
+        ProfilePostsBlock postsBlock = new ProfilePostsBlock(
+                posts, postClient, likeClient, commentClient, userClient, isOwnProfile
+        );
+
+        content.add(infoCard, postsBlock);
+        return content;
+    }
+
+    private void showError(String message) {
+        removeAll();
+        Notification.show(message, 5000, Notification.Position.TOP_CENTER);
+        VerticalLayout errorLayout = new VerticalLayout();
+        errorLayout.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.CENTER);
+        errorLayout.setPadding(true);
+        errorLayout.add(new H3(message));
+        add(errorLayout);
     }
 }
