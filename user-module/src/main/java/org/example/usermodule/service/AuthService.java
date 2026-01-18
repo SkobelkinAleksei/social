@@ -64,7 +64,13 @@ public class AuthService {
     }
 
     public LoginResponse login(LoginUserDto dto) throws AccessDeniedException {
-        log.info("[DEBUG] Попытка логина с email: '{}'", dto.getEmail());  // ← ДОБАВИТЬ
+        log.info("[DEBUG] Попытка логина с email: '{}'", dto.getEmail());
+
+        UserEntity user = userRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> {
+                    log.error("[ERROR] Пользователь не найден для email: '{}'", dto.getEmail());
+                    return new UsernameNotFoundException("Пользователь не найден");
+                });
 
         Authentication authenticate = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -74,13 +80,9 @@ public class AuthService {
         );
 
         UserDetails userDetails = (UserDetails) authenticate.getPrincipal();
-        log.info("[DEBUG] Аутентификация успешна. Username: '{}'", userDetails.getUsername());  // ← ДОБАВИТЬ
+        log.info("[DEBUG] Аутентификация успешна. Username: '{}'", userDetails.getUsername());
 
-        UserEntity user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> {
-                    log.error("[ERROR] Пользователь не найден для email: '{}'", userDetails.getUsername());  // ← ДОБАВИТЬ
-                    return new UsernameNotFoundException("Пользователь не найден");
-                });
+
 
         if (!user.isEnabled()) {
             throw new AccessDeniedException("Аккаунт недоступен!");

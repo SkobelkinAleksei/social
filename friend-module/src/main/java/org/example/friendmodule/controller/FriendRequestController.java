@@ -2,6 +2,7 @@ package org.example.friendmodule.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.common.dto.user.UserDto;
 import org.example.common.security.SecurityUtil;
 import org.example.friendmodule.dto.FriendRequestDto;
 import org.example.friendmodule.entity.FriendRequestStatus;
@@ -9,6 +10,8 @@ import org.example.friendmodule.entity.ResponseFriendRequest;
 import org.example.friendmodule.service.FriendRequestService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +29,7 @@ public class FriendRequestController {
             @RequestParam Long addresseeId
     ) {
         Long currentUserId = SecurityUtil.getCurrentUserId();
+        log.info("[DEBUG] addRequestFriend: addresseeId={}, currentUserId={}", addresseeId, currentUserId);
         return ResponseEntity.ok().body(friendRequestService.addFriendRequest(currentUserId, addresseeId));
     }
 

@@ -59,7 +59,6 @@ public class UserPostService {
         postEntity.setAuthorId(authorId);
         postEntity.setCreatedAt(LocalDateTime.now());
 
-        // это удалить нужно будет
         postEntity.setPublishAt(LocalDateTime.now());
 
         postEntity.setStatusPost(ModerationStatusPost.PENDING);

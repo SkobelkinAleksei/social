@@ -68,11 +68,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
                 log.debug("[DEBUG] Аутентификация установлена с userId={}", userId);
+                filterChain.doFilter(request, response);
             }
         } catch (Exception e) {
             log.warn("[WARN] Ошибка при парсинге JWT: {}", e.getMessage());
         }
 
-        filterChain.doFilter(request, response);
     }
 }
