@@ -2,8 +2,12 @@ package org.example.friendmodule.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.example.common.dto.RequestData;
 import org.example.common.dto.friend.FriendNotificationDto;
 import org.example.common.dto.friend.FriendNotificationResponseDto;
+import org.example.common.dto.user.UserDto;
 import org.example.friendmodule.dto.FriendRequestDto;
 import org.example.friendmodule.entity.FriendEntity;
 import org.example.friendmodule.entity.FriendRequestEntity;
@@ -12,11 +16,17 @@ import org.example.friendmodule.entity.ResponseFriendRequest;
 import org.example.friendmodule.mapper.FriendRequestMapper;
 import org.example.friendmodule.repository.FriendRequestRepository;
 import org.example.friendmodule.util.FriendRequestSpecification;
+import org.example.httpcore.httpCore.IHttpCore;
+import org.example.httpcore.retryPolicy.FixedDelayRetryPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +37,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FriendRequestService {
@@ -34,9 +45,54 @@ public class FriendRequestService {
     private final FriendService friendService;
     private final FriendRequestMapper friendRequestMapper;
     private final FriendNotificationService friendNotificationService;
+    private final FixedDelayRetryPolicy defaultRetryPolicy;
+    private final IHttpCore httpCore;
+
+    @SneakyThrows
+    public <T> ResponseEntity<T> retryExecute(RetryCallback<ResponseEntity<T>, Throwable> retryCallback, String name) {
+        return defaultRetryPolicy.getRetryTemplate().execute(context -> {
+            context.setAttribute("имя метода", name);
+            log.info("[INFO RETRY] Попытка выполнить метод {}", name);
+            try {
+                ResponseEntity<T> response = retryCallback.doWithRetry(context);
+                if (response.getStatusCode().is4xxClientError()) {
+                    throw new IllegalArgumentException("Не удалось выполнить метод " + name);
+                }
+                if (isNull(response.getBody())) {
+                    throw new IllegalArgumentException("Не удалось получить тело ответа " + response);
+                }
+
+                return response;
+            } catch (Throwable throwable) {
+                log.error("[ERROR RETRY] Не удалось выполнить метод {}", name, throwable);
+                throw throwable;
+            }
+        });
+    }
 
     @Transactional
     public FriendRequestDto addFriendRequest(Long requesterId, Long addresseeId) {
+
+        ResponseEntity<UserDto> addFriendRequest = retryExecute(context -> {
+            RequestData requestData = new RequestData(
+                    "http://localhost:8080/api/v1/social/users/post",
+                    null
+            );
+
+            String name = (String) context.getAttribute("имя метода");
+            log.info("[INFO RETRY] Выполняем метод: {}", name);
+
+            ResponseEntity<UserDto> userDtoResponseEntity =
+                    httpCore.get(requestData, null, UserDto.class);
+            log.info("[INFO RETRY] Получен ответ от сервера: {}", userDtoResponseEntity);
+            return userDtoResponseEntity;
+        }, "addFriendRequest");
+        UserDto body = addFriendRequest.getBody();
+        log.info("[INFO RETRY] Получен тело ответа: {}", body);
+
+        if (!isNull(requesterId)) {
+            throw new IllegalArgumentException("Не указан запрос");
+        }
 
         if (requesterId.equals(addresseeId)) {
             throw new IllegalArgumentException("Нельзя добавить себя в друзья");
